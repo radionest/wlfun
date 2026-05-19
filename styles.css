@@ -1,0 +1,3493 @@
+/* ===== CSS Переменные ===== */
+:root {
+  --color-blue: #4a90d9;
+  --color-green: #5cb85c;
+  --color-purple: #9b59b6;
+  --color-gold: #ffd700;
+  --color-dust: #c0c0c0;
+  --text-primary: #eee;
+  --text-secondary: #aaa;
+}
+
+/* Тема Света (синие тона) */
+.theme-light {
+  --accent: #4a90d9;
+  --accent-rgb: 74, 144, 217;
+  --bg-card: #0d1a2d;
+  --bg-input: #0a1422;
+  --border-color: #1e3a5f;
+}
+
+/* Тема Тьмы (красные тона) */
+.theme-dark {
+  --accent: #c0392b;
+  --accent-rgb: 192, 57, 43;
+  --bg-card: #2d0d0d;
+  --bg-input: #220a0a;
+  --border-color: #5f1e1e;
+}
+
+/* ===== Базовые стили ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #111;
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* ===== Reusable Components ===== */
+
+/* Боковые панели */
+.side-panel {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  background: var(--bg-card);
+  box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.side-panel--right {
+  right: 0;
+  border-left: 1px solid var(--border-color);
+  transform: translateX(100%);
+}
+
+.side-panel--left {
+  left: 0;
+  border-right: 1px solid var(--border-color);
+  transform: translateX(-100%);
+}
+
+.side-panel.open {
+  transform: translateX(0);
+}
+
+/* Кнопки */
+.btn {
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  padding: 10px 20px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn-success {
+  background: #22c55e;
+  color: white;
+  padding: 10px 20px;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #16a34a;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 10px 20px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
+/* Модальные окна */
+.modal-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 450px;
+  width: 90%;
+}
+
+.modal-dialog h2 {
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+}
+
+/* Инпуты форм */
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ===== Навигация ===== */
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-tab {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.nav-tab.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.theme-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.theme-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ===== Контент калькулятора ===== */
+.calculator-content {
+  padding: 20px;
+}
+
+/* ===== Общие стили калькуляторов ===== */
+.bp-calculator,
+.items-calculator {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 30px rgba(var(--accent-rgb), 0.2);
+  transition: all 0.3s ease;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  color: var(--accent);
+}
+
+/* Правая часть навигации */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ссылка обратной связи */
+.feedback-link {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #27ae60;
+  background: transparent;
+  color: #27ae60;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.feedback-link:hover {
+  background: #27ae60;
+  color: white;
+}
+
+h2 {
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+.disclaimer {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 6px;
+}
+
+/* ===== Формы ===== */
+.form-section,
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.form-group.highlight {
+  padding: 15px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 8px;
+}
+
+select,
+input[type='number'],
+input[type='text'] {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+select:focus,
+input:focus {
+  outline: 2px solid var(--accent);
+}
+
+/* ===== Кнопки фракций (Items калькулятор) ===== */
+.faction-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.faction-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.faction-btn.light:hover {
+  border-color: #4a90d9;
+  color: #4a90d9;
+}
+
+.faction-btn.dark:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
+
+.faction-btn.light.active {
+  background: #4a90d9;
+  color: white;
+  border-color: #4a90d9;
+}
+
+.faction-btn.dark.active {
+  background: #c0392b;
+  color: white;
+  border-color: #c0392b;
+}
+
+/* ===== Селекты уровней ===== */
+.level-selects {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 15px;
+}
+
+.level-select {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.arrow {
+  font-size: 1.5rem;
+  padding-bottom: 12px;
+  color: var(--accent);
+}
+
+/* ===== Результаты (Items калькулятор) ===== */
+.results-placeholder {
+  margin-top: 30px;
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+}
+
+.results-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.results-table th,
+.results-table td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.results-table th {
+  background: var(--bg-input);
+  color: var(--accent);
+}
+
+.gold-cell {
+  color: var(--color-gold);
+  font-weight: 500;
+}
+
+.dust-cell {
+  color: var(--color-dust);
+  font-weight: 500;
+}
+
+.totals {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding: 20px;
+  border-radius: 8px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid var(--accent);
+}
+
+.total-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.total-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.total-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.total-value.gold {
+  color: var(--color-gold);
+}
+
+.total-value.dust {
+  color: var(--color-dust);
+}
+
+/* ===== Переключатель режимов (BP калькулятор) ===== */
+.mode-select {
+  margin-bottom: 20px;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mode-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* ===== Результаты (BP калькулятор) ===== */
+.result {
+  margin-top: 25px;
+  padding: 20px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 8px;
+}
+
+.result-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.result-main {
+  margin-bottom: 15px;
+}
+
+.result-main p {
+  margin-bottom: 8px;
+}
+
+.result-level {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.result-daily {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--color-green);
+}
+
+.result-progress {
+  color: var(--text-secondary);
+}
+
+.result-max {
+  color: var(--color-gold);
+  font-weight: 500;
+}
+
+.result-error {
+  color: #e74c3c;
+  font-weight: 500;
+}
+
+.result-details {
+  padding-top: 15px;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.result-details p {
+  margin-bottom: 5px;
+}
+
+.result-total {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hint {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* ===== Адаптивность ===== */
+@media (max-width: 600px) {
+  .main-nav {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .nav-tabs {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .nav-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .feedback-link {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .calculator-content {
+    padding: 10px;
+  }
+
+  .bp-calculator,
+  .items-calculator,
+  .sets-calculator {
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  select,
+  input[type='number'] {
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  .faction-btn {
+    padding: 14px 12px;
+    font-size: 16px;
+    min-height: 48px;
+  }
+
+  .totals {
+    flex-direction: column;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 10px 6px;
+    font-size: 0.9rem;
+  }
+
+  .mode-btn {
+    padding: 14px 12px;
+    font-size: 16px;
+    min-height: 48px;
+  }
+
+  .slots-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .key-probabilities {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Калькулятор сетов ===== */
+.sets-calculator {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 30px rgba(var(--accent-rgb), 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Кнопки цветов/редкостей */
+.color-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.color-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-btn.blue:hover,
+.color-btn.blue.active {
+  border-color: var(--color-blue);
+  color: var(--color-blue);
+}
+
+.color-btn.blue.active {
+  background: var(--color-blue);
+  color: white;
+}
+
+.color-btn.green:hover,
+.color-btn.green.active {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.color-btn.green.active {
+  background: var(--color-green);
+  color: white;
+}
+
+.color-btn.purple:hover,
+.color-btn.purple.active {
+  border-color: var(--color-purple);
+  color: var(--color-purple);
+}
+
+.color-btn.purple.active {
+  background: var(--color-purple);
+  color: white;
+}
+
+/* Кнопки типа сущности (юнит/герой) */
+.entity-type-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.entity-type-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.entity-type-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.entity-type-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Кнопки номера сета */
+.set-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.set-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.set-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.set-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Чекбоксы имеющихся вещей */
+.owned-slots {
+  padding: 15px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 8px;
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.slot-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slot-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.slot-item label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.reset-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Поле максимальных попыток */
+.max-attempts input {
+  max-width: 120px;
+}
+
+/* Описание цели */
+.goal-description {
+  text-align: center;
+  padding: 10px;
+  margin-bottom: 15px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* SVG График */
+.probability-chart {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  margin: 15px auto;
+  display: block;
+}
+
+/* Ключевые вероятности */
+.key-probabilities {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 15px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.prob-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prob-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.prob-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Предупреждение для высоких уровней */
+.high-level-warning {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 6px;
+  color: #e74c3c;
+  font-size: 0.85rem;
+}
+
+/* ===== Секция инвентаря сетов ===== */
+.inventory-section {
+  margin-top: 30px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 20px;
+}
+
+.inventory-header {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.inventory-header:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.inventory-header.expanded {
+  border-color: var(--accent);
+  color: var(--accent);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.expand-icon {
+  margin-right: 8px;
+  font-size: 0.8rem;
+}
+
+/* Заголовок инвентаря с кнопкой "Поделиться" */
+.inventory-header-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.inventory-header-row .inventory-header {
+  flex: 1;
+}
+
+.share-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-green);
+  background: var(--color-green);
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.share-btn:hover {
+  background: #4cae4c;
+  border-color: #4cae4c;
+}
+
+.share-btn:active {
+  transform: scale(0.98);
+}
+
+/* Уведомление о копировании */
+.share-notification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin: 10px 0;
+  border-radius: 6px;
+  background: rgba(92, 184, 92, 0.15);
+  border: 1px solid var(--color-green);
+  color: var(--color-green);
+  font-size: 0.9rem;
+  cursor: pointer;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+.share-notification .close-btn {
+  opacity: 0.7;
+  font-size: 1.1rem;
+}
+
+.share-notification .close-btn:hover {
+  opacity: 1;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+.inventory-content {
+  border: 1px solid var(--accent);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 15px;
+  background: var(--bg-input);
+}
+
+.inventory-filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.inventory-filters .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventory-filters .filter-group label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.inventory-filters select {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+
+/* Таблица инвентаря */
+.inventory-table {
+  font-size: 0.85rem;
+}
+
+.inventory-row {
+  display: grid;
+  grid-template-columns: 2fr 0.8fr 0.5fr 1.5fr 0.8fr;
+  gap: 8px;
+  padding: 8px 4px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.inventory-row.header {
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  border-radius: 4px;
+  border-bottom: none;
+  position: sticky;
+  top: 0;
+}
+
+.inventory-row.complete {
+  background: rgba(92, 184, 92, 0.1);
+}
+
+.inventory-rows {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.col-entity {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.col-color {
+  text-align: center;
+  font-weight: 600;
+}
+
+.col-color.color-blue {
+  color: var(--color-blue);
+}
+
+.col-color.color-green {
+  color: var(--color-green);
+}
+
+.col-color.color-purple {
+  color: var(--color-purple);
+}
+
+.col-set {
+  text-align: center;
+}
+
+.col-slots {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.col-slots input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.col-progress {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.inventory-row.complete .col-progress {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+/* Адаптивность для инвентаря */
+@media (max-width: 600px) {
+  .inventory-row {
+    grid-template-columns: 1.5fr 0.6fr 0.4fr 1.2fr 0.7fr;
+    gap: 4px;
+    font-size: 0.75rem;
+    padding: 6px 2px;
+  }
+
+  .inventory-filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .inventory-rows {
+    max-height: 300px;
+  }
+
+  .col-slots input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* ===== Параметры дубликатов ===== */
+.duplicate-params {
+  padding: 15px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 8px;
+}
+
+.duplicate-params .param-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.duplicate-params .param-row:last-child {
+  margin-bottom: 0;
+}
+
+.duplicate-params label {
+  flex: 1;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.duplicate-params input[type="number"] {
+  width: 80px;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Инпуты счётчиков в инвентаре */
+.inv-count-input {
+  width: 32px;
+  height: 28px;
+  padding: 4px 2px;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  -moz-appearance: textfield;
+}
+
+.inv-count-input::-webkit-outer-spin-button,
+.inv-count-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inv-count-input:focus {
+  outline: 1px solid var(--accent);
+  border-color: var(--accent);
+}
+
+/* Обёртка для счётчика слота */
+.slot-count-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.slot-label-mobile {
+  display: none;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* Bootstrap controls стили */
+.bootstrap-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bootstrap-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bootstrap-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.bootstrap-checkbox label {
+  flex: none;
+  cursor: pointer;
+}
+
+.bootstrap-run-btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.bootstrap-run-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .duplicate-params .param-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .duplicate-params input[type="number"] {
+    width: 100%;
+  }
+
+  /* Bootstrap controls на мобильных */
+  .bootstrap-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .bootstrap-checkbox {
+    justify-content: flex-start;
+  }
+
+  .bootstrap-checkbox input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+  }
+
+  .bootstrap-run-btn {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 1rem;
+    min-height: 48px;
+  }
+
+  /* Инвентарь в режиме дубликатов - другая сетка */
+  .inventory-row.duplicates-mode {
+    grid-template-columns: 1.2fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 6px 8px;
+  }
+
+  .inventory-row.duplicates-mode .col-entity {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .inventory-row.duplicates-mode .col-color,
+  .inventory-row.duplicates-mode .col-set {
+    display: none;
+  }
+
+  .inventory-row.duplicates-mode .col-progress {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+  }
+
+  .inventory-row.duplicates-mode .col-slots {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .inventory-row.duplicates-mode .inv-count-input {
+    width: 44px;
+    height: 34px;
+    font-size: 0.95rem;
+  }
+
+  /* Показываем лейблы слотов на мобильных */
+  .inventory-row.duplicates-mode .slot-label-mobile {
+    display: block;
+  }
+
+  .inventory-row.duplicates-mode .slot-count-wrapper {
+    gap: 1px;
+  }
+}
+
+/* ===== Табы переключения режима отображения ===== */
+.mode-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+}
+
+.mode-tab {
+  padding: 10px 24px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-tab:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.mode-tab:last-child {
+  border-radius: 0 8px 8px 0;
+  border-left: none;
+}
+
+.mode-tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mode-tab.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* ===== Простой результат ===== */
+.simple-result {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.simple-probability {
+  margin-bottom: 1.5rem;
+}
+
+.simple-n {
+  display: block;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.simple-value {
+  display: block;
+  font-size: 3.5rem;
+  font-weight: bold;
+  color: var(--accent);
+  line-height: 1.2;
+}
+
+.simple-explanation {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  padding: 12px 20px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border-radius: 8px;
+  display: inline-block;
+}
+
+@media (max-width: 600px) {
+  .mode-tab {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 1rem;
+    min-height: 48px;
+  }
+
+  .simple-value {
+    font-size: 2.5rem;
+  }
+
+  .simple-explanation {
+    font-size: 1rem;
+    padding: 10px 16px;
+  }
+}
+
+/* ===== Индикатор загрузки (вычисление) ===== */
+.results-section.computing {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.computing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--accent);
+  font-size: 1.1rem;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(var(--accent-rgb), 0.3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== Меню настроек графика (шестеренка) ===== */
+.chart-container {
+  position: relative;
+}
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.chart-settings-wrapper {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20;
+}
+
+.chart-settings-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-settings-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Кнопка настроек инвентаря */
+.inventory-settings-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inventory-settings-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.inventory-settings-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Кнопка настроек симуляции */
+.simulation-settings-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.simulation-settings-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.simulation-settings-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Счётчик вещей в инвентаре */
+.inventory-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* Обёртка для кнопки статистики */
+.inventory-stats-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Кнопка статистики */
+.inventory-stats-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.inventory-stats-btn:hover {
+  background: rgba(var(--accent-rgb), 0.2);
+  border-color: var(--accent);
+}
+
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Меню статистики */
+.inventory-stats-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  min-width: 180px;
+  z-index: 30;
+}
+
+.stats-menu-title {
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stats-menu-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 4px 0;
+}
+
+.stats-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.stats-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.stats-value {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.stats-menu-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 8px 0;
+}
+
+/* Цветные метки */
+.color-blue-text {
+  color: var(--color-blue);
+}
+
+.color-green-text {
+  color: var(--color-green);
+}
+
+.color-purple-text {
+  color: var(--color-purple);
+}
+
+.inventory-settings-wrapper .chart-settings-menu {
+  left: 0;
+  right: auto;
+}
+
+.chart-settings-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  z-index: 30;
+}
+
+.settings-menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.settings-menu-item:last-child {
+  margin-bottom: 0;
+}
+
+.settings-menu-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-menu-item label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.settings-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.settings-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.settings-menu-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-menu-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .chart-settings-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+  }
+
+  .chart-settings-menu {
+    min-width: 180px;
+    padding: 14px;
+  }
+
+  .settings-menu-item input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+  }
+
+  .settings-menu-btn {
+    padding: 14px;
+    font-size: 1rem;
+    min-height: 48px;
+  }
+}
+
+/* ===== Панель целей (новая версия) ===== */
+.goals-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.goals-panel h2 {
+  margin-bottom: 0.5rem;
+}
+
+.goal-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.goal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.goal-header input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.goal-header label {
+  font-size: 1rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.selected-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.goal-params {
+  margin-left: 1.5rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid var(--border-color);
+}
+
+/* ===== Древовидный список сетов ===== */
+.sets-tree {
+  margin-left: 1.5rem;
+  margin-top: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--bg-input);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.tree-branch {
+  padding: 0.25rem 0;
+}
+
+.tree-node-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expand-btn {
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.expand-btn:hover {
+  background: rgba(var(--accent-rgb), 0.15);
+}
+
+.node-label {
+  font-weight: 500;
+}
+
+.tree-action {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tree-action:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tree-children {
+  margin-left: 1rem;
+  padding-left: 0.5rem;
+  border-left: 1px dashed var(--border-color);
+}
+
+.entity-branch {
+  margin-left: 0.5rem;
+}
+
+.set-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.set-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4px 8px;
+  background: rgba(var(--accent-rgb), 0.05);
+  border-radius: 4px;
+}
+
+.set-checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.set-label {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.set-progress {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Фракция Свет в дереве */
+.faction-branch:first-child .node-label {
+  color: #4a90d9;
+}
+
+/* Фракция Тьма в дереве */
+.faction-branch:last-child .node-label {
+  color: #c0392b;
+}
+
+/* Адаптивность для панели целей */
+@media (max-width: 600px) {
+  .goals-panel {
+    padding: 0.75rem;
+  }
+
+  .goal-header input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+  }
+
+  .sets-tree {
+    max-height: 300px;
+    margin-left: 0.5rem;
+  }
+
+  .tree-children {
+    margin-left: 0.5rem;
+    padding-left: 0.25rem;
+  }
+
+  .expand-btn {
+    padding: 6px 10px;
+    font-size: 1rem;
+  }
+
+  .tree-action {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+  }
+
+  .set-checkbox-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ===== Результаты - простой режим с несколькими целями ===== */
+.simple-results {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 1rem 0;
+}
+
+.simple-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.goal-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.goal-label {
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goal-probability {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 70px;
+  text-align: right;
+}
+
+/* Контейнер мульти-графика */
+.multi-chart-container {
+  margin-top: 1rem;
+}
+
+/* Ключевые вероятности для нескольких целей */
+.multi-key-probabilities {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.goal-key-probs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goal-key-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-key-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.key-probs-inline {
+  display: flex;
+  gap: 20px;
+  padding-left: 20px;
+}
+
+.key-prob-item {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Адаптивность для результатов */
+@media (max-width: 600px) {
+  .simple-result-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .goal-label {
+    order: 2;
+    flex-basis: 100%;
+  }
+
+  .goal-color-dot {
+    order: 1;
+  }
+
+  .goal-probability {
+    order: 3;
+    margin-left: auto;
+  }
+
+  .key-probs-inline {
+    flex-direction: column;
+    gap: 4px;
+    padding-left: 20px;
+  }
+}
+
+/* ===== Боковая панель инвентаря ===== */
+
+/* Обёртка калькулятора для управления сдвигом */
+.sets-calculator-wrapper {
+  position: relative;
+  min-height: 100vh;
+  transition: transform 0.3s ease;
+}
+
+/* Сдвиг контента на мобильных при открытой панели */
+@media (max-width: 600px) {
+  .sets-calculator-wrapper.inventory-open .sets-calculator {
+    transform: translateX(-280px);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .sets-calculator {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+}
+
+/* Боковая вкладка "Мой инвентарь" */
+.inventory-side-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 100;
+
+  padding: 12px 8px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.inventory-side-tab:hover {
+  padding-right: 12px;
+  background: rgba(var(--accent-rgb), 0.9);
+}
+
+.inventory-side-tab.hidden {
+  transform: translateY(-50%) translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Боковая панель инвентаря - специфичные стили */
+.inventory-side-panel {
+  width: 320px;
+  max-width: 90vw;
+}
+
+/* Заголовок панели */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-input);
+  flex-shrink: 0;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.panel-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.panel-close-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Дисклеймер в панели */
+.panel-disclaimer {
+  padding: 12px 20px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.3);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Контент панели */
+.inventory-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Строка с кнопкой "Поделиться" */
+.panel-share-row {
+  margin-bottom: 12px;
+}
+
+.panel-share-row .share-btn {
+  width: 100%;
+}
+
+/* Вкладка "Вернуться" слева */
+.back-side-tab {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .back-side-tab {
+    display: block;
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 250;
+
+    padding: 12px 8px;
+    background: var(--color-green);
+    color: white;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .back-side-tab:hover {
+    background: #4cae4c;
+  }
+
+  /* Мобильная адаптация панели */
+  .inventory-side-panel {
+    width: 280px;
+  }
+
+  .inventory-side-tab {
+    padding: 10px 6px;
+    font-size: 0.85rem;
+  }
+
+  .panel-header {
+    padding: 12px 16px;
+  }
+
+  .inventory-panel-content {
+    padding: 12px;
+  }
+
+  /* Фильтры в колонку */
+  .inventory-panel-content .inventory-filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* Фильтры в боковой панели */
+.inventory-panel-content .inventory-filters {
+  margin-bottom: 12px;
+}
+
+.inventory-panel-content .inventory-filters .filter-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.inventory-panel-content .inventory-filters select {
+  width: 100%;
+}
+
+/* Таблица инвентаря в боковой панели */
+.inventory-panel-content .inventory-table {
+  font-size: 0.8rem;
+}
+
+.inventory-panel-content .inventory-row {
+  grid-template-columns: 1.5fr 0.6fr 0.4fr 1.2fr 0.6fr;
+  gap: 4px;
+  padding: 6px 2px;
+}
+
+.inventory-panel-content .inventory-rows {
+  max-height: calc(100vh - 280px);
+}
+
+/* ===== Army Simulator ===== */
+.army-simulator {
+  padding: 30px;
+  max-width: 1000px;
+  margin: 0 auto;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 30px rgba(var(--accent-rgb), 0.2);
+  transition: all 0.3s ease;
+}
+
+.army-simulator .calculator-title {
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+
+.army-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.army-simulator .params-section {
+  padding: 0;
+}
+
+.army-simulator .section-title {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.army-simulator .params-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.army-simulator .param-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.army-simulator .param-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.army-simulator .param-label.blue-label {
+  color: var(--color-blue);
+}
+
+.army-simulator .param-label.green-label {
+  color: var(--color-green);
+}
+
+.army-simulator .param-label.purple-label {
+  color: var(--color-purple);
+}
+
+.army-simulator .param-select,
+.army-simulator .param-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.army-simulator .param-input:focus,
+.army-simulator .param-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.army-simulator .items-inputs,
+.army-simulator .simulation-params {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.army-simulator .run-section {
+  display: flex;
+  justify-content: center;
+}
+
+.army-simulator .run-button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.army-simulator .run-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.army-simulator .run-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.army-simulator .progress-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.army-simulator .progress-bar-container {
+  width: 100%;
+  height: 20px;
+  background: var(--bg-input);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.army-simulator .progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+
+.army-simulator .progress-text {
+  color: var(--text-secondary);
+}
+
+.army-simulator .placeholder-section {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.army-simulator .placeholder-text {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.army-simulator .systems-description {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.army-simulator .system-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: left;
+}
+
+.army-simulator .system-card h2 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.army-simulator .system-card.system-a h2 {
+  color: #ef4444;
+}
+
+.army-simulator .system-card.system-b h2 {
+  color: #22c55e;
+}
+
+.army-simulator .system-card p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.army-simulator .results-section {
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.army-simulator .mode-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.army-simulator .mode-tab {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.army-simulator .mode-tab:hover {
+  border-color: var(--accent);
+}
+
+.army-simulator .mode-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.army-simulator .chart-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.army-simulator .comparison-chart {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  margin: 0 auto;
+  display: block;
+}
+
+.army-simulator .axis-label {
+  fill: var(--text-secondary);
+  font-size: 14px;
+}
+
+.army-simulator .legend-text {
+  fill: var(--text-primary);
+  font-size: 14px;
+}
+
+.army-simulator .legend-header {
+  fill: var(--text-primary);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.army-simulator .comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.army-simulator .comparison-table th,
+.army-simulator .comparison-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.army-simulator .comparison-table th {
+  background: var(--bg-input);
+  font-weight: 600;
+}
+
+.army-simulator .comparison-table .system-a-header {
+  color: #ef4444;
+}
+
+.army-simulator .comparison-table .system-b-header {
+  color: #22c55e;
+}
+
+.army-simulator .comparison-table .positive {
+  color: #22c55e;
+}
+
+.army-simulator .comparison-table .negative {
+  color: #ef4444;
+}
+
+.army-simulator .comparison-table .neutral {
+  color: var(--text-secondary);
+}
+
+/* Сообщение об ошибке */
+.army-simulator .error-message {
+  padding: 15px 20px;
+  margin: 20px 0;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  font-size: 0.95rem;
+}
+
+/* ===== Equipment Curve ===== */
+.army-simulator .equipment-curve-section {
+  margin-top: 10px;
+}
+
+.army-simulator .percentile-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.army-simulator .percentile-toggle label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.army-simulator .equipment-curve-chart {
+  width: 100%;
+  height: auto;
+}
+
+/* ===== Army Simulator Inventory Panel ===== */
+
+/* Wrapper для поддержки боковой панели */
+.army-simulator-wrapper {
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+
+.army-simulator-wrapper.inventory-open .army-simulator {
+  margin-right: 350px;
+  transition: margin-right 0.3s ease;
+}
+
+/* Боковая вкладка */
+.inventory-side-tab {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  background: var(--accent);
+  color: white;
+  padding: 12px 8px;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  z-index: 100;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.inventory-side-tab:hover {
+  background: rgba(var(--accent-rgb), 0.8);
+}
+
+.inventory-side-tab.hidden {
+  display: none;
+}
+
+.panel-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.panel-close-btn:hover {
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+/* Фильтры инвентаря */
+.inventory-filters {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.inventory-filters .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.inventory-filters label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.inventory-filters .faction-label {
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.inventory-filters .filter-select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.inventory-filters .filter-actions {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.inventory-filters .action-btn {
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.inventory-filters .action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Контейнер таблицы инвентаря */
+.inventory-table-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+/* Строки таблицы */
+.inventory-row {
+  display: grid;
+  grid-template-columns: 1fr 35px 30px 90px 50px;
+  gap: 5px;
+  padding: 6px 5px;
+  border-bottom: 1px solid var(--border-color);
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.inventory-row.header {
+  font-weight: 600;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.inventory-row.complete {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.inventory-row .col-entity {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.inventory-row .col-color {
+  text-align: center;
+  font-weight: 500;
+}
+
+.inventory-row .col-color.color-blue {
+  color: var(--color-blue);
+}
+
+.inventory-row .col-color.color-green {
+  color: var(--color-green);
+}
+
+.inventory-row .col-color.color-purple {
+  color: var(--color-purple);
+}
+
+.inventory-row .col-set {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.inventory-row .col-slots {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+}
+
+.inventory-row .col-slots input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.inventory-row .col-progress {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Строки данных (скролл) */
+.inventory-rows {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+
+/* ============================================================================
+   Сравнение симуляций (army_simulator)
+   ============================================================================ */
+
+/* Секция сохранения */
+.save-section {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.save-button {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.save-button:hover {
+  background: #16a34a;
+}
+
+.save-button:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+.compare-toggle-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.compare-toggle-btn:hover {
+  filter: brightness(1.1);
+}
+
+/* Модальное окно сохранения */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+}
+
+/* Специфичные стили для save-dialog */
+.save-dialog {
+  min-width: 350px;
+}
+
+.dialog-content {
+  margin: 20px 0;
+}
+
+.dialog-content .form-group {
+  margin-bottom: 16px;
+}
+
+.dialog-content label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+}
+
+/* Базовые стили инпута теперь в .form-input */
+
+.simulation-preview {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.simulation-preview p {
+  margin: 4px 0;
+  color: var(--text-secondary);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Базовые стили кнопок теперь в .btn, .btn-primary, .btn-secondary */
+
+/* Панель сравнения (боковая) */
+.comparison-panel {
+  position: fixed;
+  top: 60px;
+  right: -500px;
+  width: 500px;
+  height: calc(100vh - 60px);
+  background: var(--bg-card);
+  border-left: 1px solid var(--border-color);
+  transition: right 0.3s ease;
+  overflow-y: auto;
+  z-index: 100;
+  padding: 20px;
+}
+
+.comparison-panel.open {
+  right: 0;
+}
+
+.army-simulator-wrapper.comparison-open .army-simulator {
+  margin-right: 520px;
+}
+
+.comparison-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.comparison-header h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* Список симуляций */
+.simulations-list {
+  margin-bottom: 20px;
+}
+
+.simulations-list h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.sims-scroll {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.simulation-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: var(--bg-input);
+}
+
+.simulation-item .chart-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.color-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sim-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.base-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.base-radio-label input[type="radio"] {
+  accent-color: var(--accent);
+}
+
+.delete-sim-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.delete-sim-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Селектор системы выпадения */
+.drop-system-selector {
+  margin-bottom: 20px;
+}
+
+.drop-system-selector label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.system-select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.system-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* График сравнения нескольких симуляций */
+.multi-comparison-chart {
+  width: 100%;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.multi-comparison-chart .axis-label {
+  fill: var(--text-secondary);
+  font-size: 12px;
+}
+
+.multi-comparison-chart .legend-text {
+  fill: var(--text-primary);
+  font-size: 12px;
+}
+
+.no-sims-message,
+.no-base-message {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* Таблица сравнения нескольких симуляций */
+.multi-comparison-table-container {
+  margin-top: 20px;
+}
+
+.multi-comparison-table-container h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.multi-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.multi-comparison-table th,
+.multi-comparison-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.multi-comparison-table th {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.multi-comparison-table .section-header td {
+  background: var(--bg-input);
+  font-weight: bold;
+  color: var(--accent);
+  padding: 10px;
+}
+
+.multi-comparison-table .base-col,
+.multi-comparison-table .base-val {
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.multi-comparison-table .positive {
+  color: #22c55e;
+}
+
+.multi-comparison-table .negative {
+  color: #ef4444;
+}
+
+.multi-comparison-table .neutral {
+  color: var(--text-secondary);
+}
+
+/* ===== Панель профилей ===== */
+.profiles-panel {
+  position: fixed;
+  left: -380px;
+  top: 60px;
+  width: 380px;
+  height: calc(100% - 60px);
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  transition: left 0.3s ease;
+  z-index: 100;
+  padding: 20px;
+}
+
+.profiles-panel.open {
+  left: 0;
+}
+
+.army-simulator-wrapper.profiles-open .army-simulator {
+  margin-left: 400px;
+}
+
+.profiles-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profiles-header h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* Кнопка профилей в заголовке */
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profiles-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profiles-button:hover {
+  background: rgba(var(--accent-rgb), 0.2);
+}
+
+/* Секция сохранения профиля */
+.save-profile-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.current-inventory-stats {
+  margin-bottom: 12px;
+}
+
+.current-inventory-stats p {
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.stat-item {
+  display: inline-block;
+  margin-right: 12px;
+  font-size: 0.85rem;
+}
+
+.stat-item.blue {
+  color: var(--color-blue);
+}
+
+.stat-item.green {
+  color: var(--color-green);
+}
+
+.stat-item.purple {
+  color: var(--color-purple);
+}
+
+.save-profile-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-profile-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.save-profile-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Список профилей */
+.profiles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.no-profiles-message {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border-radius: 8px;
+}
+
+.profile-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-input);
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-stats .stat-item {
+  font-size: 0.8rem;
+  margin-right: 0;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.load-profile-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.load-profile-btn:hover {
+  background: rgba(var(--accent-rgb), 0.2);
+}
+
+.delete-profile-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 6px 10px;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.delete-profile-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Специфичные стили для диалога профиля */
+.profile-save-dialog {
+  padding: 28px;
+  max-width: 420px;
+}
+
+.profile-save-dialog h2 {
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+
+/* Базовые стили инпута профиля теперь в .form-input */
+
+.inventory-preview {
+  background: var(--bg-input);
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.inventory-preview h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.inventory-preview p {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.inventory-preview p.blue {
+  color: var(--color-blue);
+}
+
+.inventory-preview p.green {
+  color: var(--color-green);
+}
+
+.inventory-preview p.purple {
+  color: var(--color-purple);
+}
+
+/* ===== Army Simulator Mobile Styles ===== */
+@media (max-width: 600px) {
+  /* Отключаем flex на wrapper в мобильном режиме */
+  .army-simulator-wrapper {
+    display: block;
+  }
+
+  /* Основной контейнер на всю ширину */
+  .army-simulator {
+    max-width: 100%;
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  /* Отключаем смещение контента при открытых панелях */
+  .army-simulator-wrapper.inventory-open .army-simulator,
+  .army-simulator-wrapper.comparison-open .army-simulator,
+  .army-simulator-wrapper.profiles-open .army-simulator {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Боковая панель инвентаря на весь экран */
+  .side-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Панель сравнения на весь экран */
+  .comparison-panel {
+    width: 100%;
+    right: -100%;
+    top: 0;
+    height: 100vh;
+  }
+
+  .comparison-panel.open {
+    right: 0;
+  }
+
+  /* Панель профилей на весь экран */
+  .profiles-panel {
+    width: 100%;
+    left: -100%;
+    top: 0;
+    height: 100%;
+  }
+
+  .profiles-panel.open {
+    left: 0;
+  }
+
+  .army-simulator .section-title {
+    font-size: 1rem;
+  }
+
+  /* Вкладки режимов */
+  .army-simulator .mode-tabs {
+    flex-wrap: wrap;
+  }
+
+  .army-simulator .mode-tab {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+
+  /* Кнопка запуска */
+  .army-simulator .run-button {
+    padding: 12px 24px;
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  /* Системные карточки */
+  .army-simulator .systems-description {
+    grid-template-columns: 1fr;
+  }
+
+  .army-simulator .system-card {
+    padding: 14px;
+  }
+
+  /* Модальные окна */
+  .save-dialog,
+  .profile-save-dialog {
+    width: 95%;
+    min-width: auto;
+    max-width: 95%;
+    padding: 20px;
+  }
+
+  /* Заголовок с кнопкой */
+  .section-header-row {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .profiles-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Таблица сравнения */
+  .army-simulator .comparison-table {
+    font-size: 0.8rem;
+  }
+
+  .army-simulator .comparison-table th,
+  .army-simulator .comparison-table td {
+    padding: 6px 8px;
+  }
+
+  /* Элементы профиля */
+  .profile-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .profile-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Элементы симуляции */
+  .simulation-item {
+    flex-wrap: wrap;
+  }
+
+  .sim-name {
+    flex-basis: 100%;
+    order: -1;
+    margin-bottom: 8px;
+  }
+}
