@@ -2,19 +2,29 @@ import gleam/int
 import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
-import lustre/element.{type Element, text}
-import lustre/element/html.{div, h1, h2, label, select, option, table, thead, tbody, tr, th, td, span, button}
-import lustre/attribute.{class, value, selected}
-import lustre/event.{on_change, on_click}
-import items_calculator/items_model.{type Model, type Msg, UserSelectedFaction, UserSelectedUnit, UserSelectedColor, UserChangedCurrentLevel, UserChangedTargetLevel}
-import items_calculator/game_data.{type ItemColor, type Unit, Blue, Green, Purple, Light, Dark}
 import items_calculator/calculator_logic.{type CalculationResult, type LevelCost}
+import items_calculator/game_data.{
+  type ItemColor, type Unit, Blue, Dark, Green, Light, Purple,
+}
+import items_calculator/items_model.{
+  type Model, type Msg, UserChangedCurrentLevel, UserChangedTargetLevel,
+  UserSelectedColor, UserSelectedFaction, UserSelectedUnit,
+}
+import lustre/attribute.{class, selected, value}
+import lustre/element.{type Element, text}
+import lustre/element/html.{
+  button, div, h1, h2, label, option, select, span, table, tbody, td, th, thead,
+  tr,
+}
+import lustre/event.{on_change, on_click}
 
 pub fn view(model: Model) -> Element(Msg) {
   div([class("items-calculator")], [
     h1([], [text("Калькулятор улучшения предметов")]),
     div([class("disclaimer")], [
-      text("Это неофициальный калькулятор. Он может содержать ошибки и неточности, особенно на 9 и 10 уровнях, так как пока что нет точных данных об их стоимости. Реальная стоимость апгрейда для этих уровней может отличаться в несколько раз как в большую так и в меньшую стороны. Если вы прокачали вещь до 8 или 9 уровней, поспамьте скринами в группу ВЛ в телеге."),
+      text(
+        "Это неофициальный калькулятор. Он может содержать ошибки и неточности, особенно на 9 и 10 уровнях, так как пока что нет точных данных об их стоимости. Реальная стоимость апгрейда для этих уровней может отличаться в несколько раз как в большую так и в меньшую стороны. Если вы прокачали вещь до 8 или 9 уровней, поспамьте скринами в группу ВЛ в телеге.",
+      ),
     ]),
     div([class("form-section")], [
       view_faction_select(model),
@@ -48,14 +58,12 @@ fn view_faction_select(model: Model) -> Element(Msg) {
   div([class("form-group faction-select")], [
     label([], [text("Фракция:")]),
     div([class("faction-buttons")], [
-      button(
-        [class(light_class), on_click(UserSelectedFaction("light"))],
-        [text("Свет")],
-      ),
-      button(
-        [class(dark_class), on_click(UserSelectedFaction("dark"))],
-        [text("Тьма")],
-      ),
+      button([class(light_class), on_click(UserSelectedFaction("light"))], [
+        text("Свет"),
+      ]),
+      button([class(dark_class), on_click(UserSelectedFaction("dark"))], [
+        text("Тьма"),
+      ]),
     ]),
   ])
 }
@@ -91,15 +99,27 @@ fn view_color_select(model: Model) -> Element(Msg) {
     label([], [text("Редкость предмета:")]),
     select([on_change(UserSelectedColor), class("color-select")], [
       option(
-        [value("blue"), selected(model.selected_color == Blue), class("color-blue")],
+        [
+          value("blue"),
+          selected(model.selected_color == Blue),
+          class("color-blue"),
+        ],
         "Синий",
       ),
       option(
-        [value("green"), selected(model.selected_color == Green), class("color-green")],
+        [
+          value("green"),
+          selected(model.selected_color == Green),
+          class("color-green"),
+        ],
         "Зелёный",
       ),
       option(
-        [value("purple"), selected(model.selected_color == Purple), class("color-purple")],
+        [
+          value("purple"),
+          selected(model.selected_color == Purple),
+          class("color-purple"),
+        ],
         "Фиолетовый",
       ),
     ]),
@@ -192,9 +212,12 @@ fn view_totals(result: CalculationResult, _color: ItemColor) -> Element(Msg) {
 
 fn view_high_level_disclaimer(model: Model) -> Element(Msg) {
   case model.target_level >= 9 {
-    True -> div([class("disclaimer high-level-warning")], [
-      text("⚠️ Внимание: расчёт для 9 и 10 уровней может содержать значительную погрешность (в несколько раз в любую сторону), так как точные значения стоимости апгрейда на эти уровни пока не известны.")
-    ])
+    True ->
+      div([class("disclaimer high-level-warning")], [
+        text(
+          "⚠️ Внимание: расчёт для 9 и 10 уровней может содержать значительную погрешность (в несколько раз в любую сторону), так как точные значения стоимости апгрейда на эти уровни пока не известны.",
+        ),
+      ])
     False -> text("")
   }
 }

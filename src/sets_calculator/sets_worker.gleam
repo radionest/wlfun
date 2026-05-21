@@ -2,7 +2,7 @@
 import gleam/json
 import lustre/effect.{type Effect}
 import plinth/browser/worker.{type Worker}
-import sets_calculator/sets_model.{type Msg, WorkerReady, WorkerError}
+import sets_calculator/sets_model.{type Msg, WorkerError, WorkerReady}
 
 /// Параметры для вычисления кривой дубликатов
 pub type CalculationParams {
@@ -52,15 +52,18 @@ fn encode_calculation_request(params: CalculationParams) -> json.Json {
   json.object([
     #("type", json.string(calc_type)),
     #("requestId", json.string("calc_1")),
-    #("params", json.object([
-      #("minDuplicates", json.int(params.min_duplicates)),
-      #("minItems", json.int(params.min_items)),
-      #("maxAttempts", json.int(params.max_attempts)),
-      #("numSimulations", json.int(params.num_simulations)),
-      #("poolSize", json.int(params.pool_size)),
-      #("includeBootstrap", json.bool(params.include_bootstrap)),
-      #("initialCounts", json.array(params.initial_counts, json.int)),
-    ])),
+    #(
+      "params",
+      json.object([
+        #("minDuplicates", json.int(params.min_duplicates)),
+        #("minItems", json.int(params.min_items)),
+        #("maxAttempts", json.int(params.max_attempts)),
+        #("numSimulations", json.int(params.num_simulations)),
+        #("poolSize", json.int(params.pool_size)),
+        #("includeBootstrap", json.bool(params.include_bootstrap)),
+        #("initialCounts", json.array(params.initial_counts, json.int)),
+      ]),
+    ),
   ])
 }
 

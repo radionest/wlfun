@@ -1,11 +1,16 @@
+import army_simulator/army_model.{
+  type InitialSetsSnapshot, type Msg, type SimulationParams, WorkerError,
+  WorkerReady,
+}
 import gleam/json
 import gleam/list
+import items_calculator/game_data.{
+  type Faction, type ItemColor, Blue, Dark, Green, Light, Purple,
+}
 import lustre/effect.{type Effect}
 import plinth/browser/worker.{type Worker}
-import items_calculator/game_data.{type Faction, type ItemColor, Light, Dark, Blue, Green, Purple}
-import army_simulator/army_model.{type Msg, type SimulationParams, type InitialSetsSnapshot, WorkerReady, WorkerError}
-import sets_calculator/sets_inventory.{type Inventory}
 import sets_calculator/sets_game_data.{SetId}
+import sets_calculator/sets_inventory.{type Inventory}
 
 /// Инициализировать Web Worker
 pub fn init_worker() -> Effect(Msg) {
@@ -26,13 +31,22 @@ pub fn init_worker() -> Effect(Msg) {
 }
 
 /// Запустить симуляцию
-pub fn run_simulation(w: Worker, params: SimulationParams, faction: Faction, inventory: Inventory) -> Nil {
+pub fn run_simulation(
+  w: Worker,
+  params: SimulationParams,
+  faction: Faction,
+  inventory: Inventory,
+) -> Nil {
   let message = encode_simulation_request(params, faction, inventory)
   worker.post_message(w, message)
 }
 
 /// Кодирование запроса
-fn encode_simulation_request(params: SimulationParams, faction: Faction, inventory: Inventory) -> json.Json {
+fn encode_simulation_request(
+  params: SimulationParams,
+  faction: Faction,
+  inventory: Inventory,
+) -> json.Json {
   let faction_str = case faction {
     Light -> "light"
     Dark -> "dark"
@@ -44,15 +58,18 @@ fn encode_simulation_request(params: SimulationParams, faction: Faction, invento
   json.object([
     #("type", json.string("run_comparison")),
     #("requestId", json.string("sim_1")),
-    #("params", json.object([
-      #("bluePerMonth", json.int(params.blue_per_month)),
-      #("greenPerMonth", json.int(params.green_per_month)),
-      #("purplePerMonth", json.int(params.purple_per_month)),
-      #("months", json.int(params.months)),
-      #("numSimulations", json.int(params.num_simulations)),
-      #("faction", json.string(faction_str)),
-      #("initialInventory", initial_inventory),
-    ])),
+    #(
+      "params",
+      json.object([
+        #("bluePerMonth", json.int(params.blue_per_month)),
+        #("greenPerMonth", json.int(params.green_per_month)),
+        #("purplePerMonth", json.int(params.purple_per_month)),
+        #("months", json.int(params.months)),
+        #("numSimulations", json.int(params.num_simulations)),
+        #("faction", json.string(faction_str)),
+        #("initialInventory", initial_inventory),
+      ]),
+    ),
   ])
 }
 
@@ -91,10 +108,14 @@ fn encode_color_inventory(inventory: Inventory, color: ItemColor) -> List(Int) {
     let slots2 = sets_inventory.get_slots(inventory, set2)
 
     [
-      bool_to_int(slots1.slot1), bool_to_int(slots1.slot2),
-      bool_to_int(slots1.slot3), bool_to_int(slots1.slot4),
-      bool_to_int(slots2.slot1), bool_to_int(slots2.slot2),
-      bool_to_int(slots2.slot3), bool_to_int(slots2.slot4),
+      bool_to_int(slots1.slot1),
+      bool_to_int(slots1.slot2),
+      bool_to_int(slots1.slot3),
+      bool_to_int(slots1.slot4),
+      bool_to_int(slots2.slot1),
+      bool_to_int(slots2.slot2),
+      bool_to_int(slots2.slot3),
+      bool_to_int(slots2.slot4),
     ]
   })
 }
@@ -112,10 +133,16 @@ fn parse_worker_response_ffi(data: json.Json) -> Msg
 
 /// FFI для расчёта начальных сетов
 @external(javascript, "../army_ffi.mjs", "calculateInitialSets")
-fn calculate_initial_sets_ffi(inventory_json: String, faction: String) -> InitialSetsSnapshot
+fn calculate_initial_sets_ffi(
+  inventory_json: String,
+  faction: String,
+) -> InitialSetsSnapshot
 
 /// Рассчитать начальное количество юнитов с полными сетами
-pub fn calculate_initial_sets(inventory: Inventory, faction: Faction) -> InitialSetsSnapshot {
+pub fn calculate_initial_sets(
+  inventory: Inventory,
+  faction: Faction,
+) -> InitialSetsSnapshot {
   let inv_json = json.to_string(encode_inventory_for_simulation(inventory))
   let faction_str = case faction {
     Light -> "light"

@@ -1,44 +1,49 @@
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import items_calculator/game_data.{
+  type Faction, type ItemColor, type Unit, Blue, Dark, Green, Light, Purple,
+}
+import lustre/attribute.{checked, class, id, selected, type_, value}
 import lustre/element.{type Element, text}
-import lustre/element/html.{div, h1, h2, label, select, option, input, button, span}
-import lustre/attribute.{class, value, selected, type_, id, checked}
+import lustre/element/html.{
+  button, div, h1, h2, input, label, option, select, span,
+}
 import lustre/event.{on_change, on_click, on_input}
-import items_calculator/game_data.{type Faction, type ItemColor, type Unit, Blue, Green, Purple, Light, Dark}
 import sets_calculator/sets_model.{
-  type Model, type Msg, type ActiveGoal,
-  FactionNode, EntityNode,
-  GoalDuplicates, SimpleMode, ChartMode,
-  SetMaxAttempts,
-  InventoryToggleSlot, InventorySetFilterFaction,
-  InventorySetFilterColor, InventorySetCount, SetMinDuplicates, SetMinItems,
-  SetViewMode,
-  ToggleInventorySettingsMenu, CloseInventorySettingsMenu,
-  InventoryFillAll, InventoryClearAll, InventoryResetCounts,
-  ToggleInventoryStatsMenu, CloseInventoryStatsMenu,
-  CopyShareLink, HideShareNotification,
-  // Новые сообщения для панели целей
-  ToggleSpecificSetGoal, ToggleAnyFactionGoal, ToggleDuplicatesGoal,
-  SetAnyFactionFaction, ToggleTreeNode, ToggleSetSelection,
-  SelectAllInNode, DeselectAllInNode, SelectColor,
-  // Боковая панель инвентаря
-  ToggleInventoryPanel,
-  // Профили
-  ToggleProfilesPanel, OpenProfileSaveDialog, CloseProfileSaveDialog,
-  SetProfileName, SaveCurrentProfile, LoadProfile, DeleteProfile,
+  type ActiveGoal, type Model, type Msg, ChartMode, CloseInventorySettingsMenu,
+  CloseInventoryStatsMenu, CloseProfileSaveDialog, CopyShareLink, DeleteProfile,
+  DeselectAllInNode, EntityNode, FactionNode, GoalDuplicates,
+  HideShareNotification, InventoryClearAll, InventoryFillAll,
+  InventoryResetCounts, InventorySetCount, InventorySetFilterColor,
+  InventorySetFilterFaction, InventoryToggleSlot, LoadProfile,
+  OpenProfileSaveDialog, SaveCurrentProfile, SelectAllInNode, SelectColor,
+  SetAnyFactionFaction, SetMaxAttempts, SetMinDuplicates, SetMinItems,
+  SetProfileName, SetViewMode, SimpleMode, ToggleAnyFactionGoal,
+  ToggleDuplicatesGoal, ToggleInventoryPanel, ToggleInventorySettingsMenu,
+  ToggleInventoryStatsMenu, ToggleProfilesPanel, ToggleSetSelection,
+  ToggleSpecificSetGoal, ToggleTreeNode,
 }
+
+// Новые сообщения для панели целей
+// Боковая панель инвентаря
+// Профили
 import army_simulator/army_model.{type Profile, max_profiles}
-import sets_calculator/sets_game_data.{
-  type Hero, type SetId, RegularUnit, HeroEntity, SetId,
-  items_needed, generate_all_set_ids, filter_sets,
-}
 import sets_calculator/sets_chart.{ChartCurve}
-import sets_calculator/sets_inventory.{type InventoryStats, count_owned, get_stats}
+import sets_calculator/sets_game_data.{
+  type Hero, type SetId, HeroEntity, RegularUnit, SetId, filter_sets,
+  generate_all_set_ids, items_needed,
+}
+import sets_calculator/sets_inventory.{
+  type InventoryStats, count_owned, get_stats,
+}
 import shared/inventory_view
 
 pub fn view(model: Model) -> Element(Msg) {
-  let wrapper_class = case model.inventory_panel_open, model.profiles_panel_open {
+  let wrapper_class = case
+    model.inventory_panel_open,
+    model.profiles_panel_open
+  {
     True, _ -> "sets-calculator-wrapper inventory-open"
     _, True -> "sets-calculator-wrapper profiles-open"
     _, _ -> "sets-calculator-wrapper"
@@ -124,7 +129,11 @@ fn view_inventory_panel_content(model: Model) -> Element(Msg) {
   div([class("inventory-panel-content")], [
     // Overlay для закрытия меню
     case model.inventory_settings_menu_open {
-      True -> div([class("settings-overlay"), on_click(CloseInventorySettingsMenu)], [])
+      True ->
+        div(
+          [class("settings-overlay"), on_click(CloseInventorySettingsMenu)],
+          [],
+        )
       False -> text("")
     },
     // Кнопка "Поделиться"
@@ -184,9 +193,10 @@ fn view_specific_set_goal(model: Model) -> Element(Msg) {
       ]),
       label([attribute.for("goal-specific")], [text("Выбранные сеты")]),
       case model.specific_set_enabled && selected_count > 0 {
-        True -> span([class("selected-count")], [
-          text(" (" <> int.to_string(selected_count) <> " выбрано)")
-        ])
+        True ->
+          span([class("selected-count")], [
+            text(" (" <> int.to_string(selected_count) <> " выбрано)"),
+          ])
         False -> text("")
       },
     ]),
@@ -230,14 +240,12 @@ fn view_faction_buttons_for_goal(current_faction: Faction) -> Element(Msg) {
 
   div([class("goal-params")], [
     div([class("faction-buttons")], [
-      button(
-        [class(light_class), on_click(SetAnyFactionFaction("light"))],
-        [text("Свет")],
-      ),
-      button(
-        [class(dark_class), on_click(SetAnyFactionFaction("dark"))],
-        [text("Тьма")],
-      ),
+      button([class(light_class), on_click(SetAnyFactionFaction("light"))], [
+        text("Свет"),
+      ]),
+      button([class(dark_class), on_click(SetAnyFactionFaction("dark"))], [
+        text("Тьма"),
+      ]),
     ]),
   ])
 }
@@ -302,7 +310,11 @@ fn view_sets_tree(model: Model) -> Element(Msg) {
 }
 
 /// Ветка фракции
-fn view_faction_branch(model: Model, faction: Faction, faction_label: String) -> Element(Msg) {
+fn view_faction_branch(
+  model: Model,
+  faction: Faction,
+  faction_label: String,
+) -> Element(Msg) {
   let node_id = FactionNode(faction)
   let is_expanded = list.contains(model.expanded_tree_nodes, node_id)
 
@@ -310,12 +322,19 @@ fn view_faction_branch(model: Model, faction: Faction, faction_label: String) ->
     // Заголовок с иконкой раскрытия
     div([class("tree-node-header")], [
       button([class("expand-btn"), on_click(ToggleTreeNode(node_id))], [
-        text(case is_expanded { True -> "▼ " False -> "▶ " }),
+        text(case is_expanded {
+          True -> "▼ "
+          False -> "▶ "
+        }),
         span([class("node-label")], [text(faction_label)]),
       ]),
       // Быстрые действия
-      button([class("tree-action"), on_click(SelectAllInNode(node_id))], [text("Все")]),
-      button([class("tree-action"), on_click(DeselectAllInNode(node_id))], [text("Нет")]),
+      button([class("tree-action"), on_click(SelectAllInNode(node_id))], [
+        text("Все"),
+      ]),
+      button([class("tree-action"), on_click(DeselectAllInNode(node_id))], [
+        text("Нет"),
+      ]),
     ]),
     // Дочерние узлы
     case is_expanded {
@@ -328,13 +347,15 @@ fn view_faction_branch(model: Model, faction: Faction, faction_label: String) ->
 /// Получить все ветки юнитов и героев для фракции
 fn get_entity_branches(model: Model, faction: Faction) -> List(Element(Msg)) {
   // Юниты
-  let unit_branches = game_data.units_by_faction(faction)
+  let unit_branches =
+    game_data.units_by_faction(faction)
     |> list.map(fn(u: Unit) {
       view_entity_branch(model, faction, u.name, RegularUnit)
     })
 
   // Герои
-  let hero_branches = sets_game_data.heroes_by_faction(faction)
+  let hero_branches =
+    sets_game_data.heroes_by_faction(faction)
     |> list.map(fn(h: Hero) {
       view_entity_branch(model, faction, h.name, HeroEntity)
     })
@@ -343,7 +364,12 @@ fn get_entity_branches(model: Model, faction: Faction) -> List(Element(Msg)) {
 }
 
 /// Ветка юнита/героя
-fn view_entity_branch(model: Model, faction: Faction, name: String, entity_type: sets_game_data.EntityType) -> Element(Msg) {
+fn view_entity_branch(
+  model: Model,
+  faction: Faction,
+  name: String,
+  entity_type: sets_game_data.EntityType,
+) -> Element(Msg) {
   let node_id = EntityNode(faction, name, entity_type)
   let is_expanded = list.contains(model.expanded_tree_nodes, node_id)
   let type_suffix = case entity_type {
@@ -355,7 +381,10 @@ fn view_entity_branch(model: Model, faction: Faction, name: String, entity_type:
     // Заголовок
     div([class("tree-node-header")], [
       button([class("expand-btn"), on_click(ToggleTreeNode(node_id))], [
-        text(case is_expanded { True -> "▼ " False -> "▶ " }),
+        text(case is_expanded {
+          True -> "▼ "
+          False -> "▶ "
+        }),
         span([class("node-label")], [text(name <> type_suffix)]),
       ]),
     ]),
@@ -368,7 +397,11 @@ fn view_entity_branch(model: Model, faction: Faction, name: String, entity_type:
 }
 
 /// Чекбоксы для сетов (Сет 1 и Сет 2)
-fn view_set_checkboxes(model: Model, entity_name: String, entity_type: sets_game_data.EntityType) -> Element(Msg) {
+fn view_set_checkboxes(
+  model: Model,
+  entity_name: String,
+  entity_type: sets_game_data.EntityType,
+) -> Element(Msg) {
   let set1_id = SetId(entity_name, entity_type, model.selected_color, 1)
   let set2_id = SetId(entity_name, entity_type, model.selected_color, 2)
 
@@ -376,8 +409,10 @@ fn view_set_checkboxes(model: Model, entity_name: String, entity_type: sets_game
   let set2_selected = list.contains(model.selected_sets, set2_id)
 
   // Прогресс из инвентаря
-  let set1_owned = count_owned(sets_inventory.get_slots(model.inventory, set1_id))
-  let set2_owned = count_owned(sets_inventory.get_slots(model.inventory, set2_id))
+  let set1_owned =
+    count_owned(sets_inventory.get_slots(model.inventory, set1_id))
+  let set2_owned =
+    count_owned(sets_inventory.get_slots(model.inventory, set2_id))
   let needed = items_needed(entity_type)
 
   div([class("tree-children set-checkboxes")], [
@@ -389,7 +424,13 @@ fn view_set_checkboxes(model: Model, entity_name: String, entity_type: sets_game
       ]),
       span([class("set-label")], [text("Сет 1")]),
       span([class("set-progress")], [
-        text(" (" <> int.to_string(set1_owned) <> "/" <> int.to_string(needed) <> ")"),
+        text(
+          " ("
+          <> int.to_string(set1_owned)
+          <> "/"
+          <> int.to_string(needed)
+          <> ")",
+        ),
       ]),
     ]),
     div([class("set-checkbox-item")], [
@@ -400,7 +441,13 @@ fn view_set_checkboxes(model: Model, entity_name: String, entity_type: sets_game
       ]),
       span([class("set-label")], [text("Сет 2")]),
       span([class("set-progress")], [
-        text(" (" <> int.to_string(set2_owned) <> "/" <> int.to_string(needed) <> ")"),
+        text(
+          " ("
+          <> int.to_string(set2_owned)
+          <> "/"
+          <> int.to_string(needed)
+          <> ")",
+        ),
       ]),
     ]),
   ])
@@ -424,18 +471,13 @@ fn view_color_select(model: Model) -> Element(Msg) {
   div([class("form-group color-select-group")], [
     label([], [text("Редкость:")]),
     div([class("color-buttons")], [
-      button(
-        [class(blue_class), on_click(SelectColor("blue"))],
-        [text("Синий")],
-      ),
-      button(
-        [class(green_class), on_click(SelectColor("green"))],
-        [text("Зелёный")],
-      ),
-      button(
-        [class(purple_class), on_click(SelectColor("purple"))],
-        [text("Фиолетовый")],
-      ),
+      button([class(blue_class), on_click(SelectColor("blue"))], [text("Синий")]),
+      button([class(green_class), on_click(SelectColor("green"))], [
+        text("Зелёный"),
+      ]),
+      button([class(purple_class), on_click(SelectColor("purple"))], [
+        text("Фиолетовый"),
+      ]),
     ]),
   ])
 }
@@ -468,9 +510,10 @@ fn view_results(model: Model) -> Element(Msg) {
       ])
     False -> {
       // Получаем активные цели с кривыми
-      let goals_with_curves = list.filter(model.active_goals, fn(g: ActiveGoal) {
-        option.is_some(g.probability_curve)
-      })
+      let goals_with_curves =
+        list.filter(model.active_goals, fn(g: ActiveGoal) {
+          option.is_some(g.probability_curve)
+        })
 
       case list.is_empty(goals_with_curves) {
         True ->
@@ -493,10 +536,11 @@ fn view_results(model: Model) -> Element(Msg) {
 
 /// Простой режим - список всех целей с вероятностями
 fn view_simple_results(model: Model, goals: List(ActiveGoal)) -> Element(Msg) {
-  div([class("simple-results")],
+  div(
+    [class("simple-results")],
     list.map(goals, fn(goal: ActiveGoal) {
       view_simple_result_item(model, goal)
-    })
+    }),
   )
 }
 
@@ -509,7 +553,16 @@ fn view_simple_result_item(model: Model, goal: ActiveGoal) -> Element(Msg) {
       let percent = format_percent(prob)
 
       div([class("simple-result-item")], [
-        span([class("goal-color-dot"), attribute.attribute("style", "background-color: " <> goal.chart_color)], []),
+        span(
+          [
+            class("goal-color-dot"),
+            attribute.attribute(
+              "style",
+              "background-color: " <> goal.chart_color,
+            ),
+          ],
+          [],
+        ),
         span([class("goal-label")], [text(goal.label)]),
         span([class("goal-probability")], [text(percent)]),
       ])
@@ -520,16 +573,19 @@ fn view_simple_result_item(model: Model, goal: ActiveGoal) -> Element(Msg) {
 /// Режим графика - мульти-чарт со всеми кривыми
 fn view_chart_results(_model: Model, goals: List(ActiveGoal)) -> Element(Msg) {
   // Преобразуем ActiveGoal в ChartCurve
-  let curves = goals
+  let curves =
+    goals
     |> list.filter_map(fn(goal: ActiveGoal) {
       case goal.probability_curve {
-        Some(data) -> Ok(ChartCurve(label: goal.label, data: data, color: goal.chart_color))
+        Some(data) ->
+          Ok(ChartCurve(label: goal.label, data: data, color: goal.chart_color))
         None -> Error(Nil)
       }
     })
 
   case list.is_empty(curves) {
-    True -> div([class("results-placeholder")], [text("Нет данных для графика")])
+    True ->
+      div([class("results-placeholder")], [text("Нет данных для графика")])
     False ->
       div([class("chart-container multi-chart-container")], [
         sets_chart.render_multi_chart(curves, 600, 350),
@@ -540,20 +596,30 @@ fn view_chart_results(_model: Model, goals: List(ActiveGoal)) -> Element(Msg) {
 
 /// Ключевые вероятности для мульти-режима
 fn view_multi_key_probabilities(goals: List(ActiveGoal)) -> Element(Msg) {
-  div([class("multi-key-probabilities")],
+  div(
+    [class("multi-key-probabilities")],
     list.map(goals, fn(goal: ActiveGoal) {
       case goal.probability_curve {
         None -> text("")
         Some(curve) ->
           div([class("goal-key-probs")], [
             div([class("goal-key-header")], [
-              span([class("goal-color-dot"), attribute.attribute("style", "background-color: " <> goal.chart_color)], []),
+              span(
+                [
+                  class("goal-color-dot"),
+                  attribute.attribute(
+                    "style",
+                    "background-color: " <> goal.chart_color,
+                  ),
+                ],
+                [],
+              ),
               span([class("goal-key-label")], [text(goal.label)]),
             ]),
             view_key_probs_inline(curve),
           ])
       }
-    })
+    }),
   )
 }
 
@@ -584,8 +650,12 @@ fn view_mode_tabs(model: Model) -> Element(Msg) {
   }
 
   div([class("mode-tabs")], [
-    button([class(simple_class), on_click(SetViewMode(SimpleMode))], [text("Простой")]),
-    button([class(chart_class), on_click(SetViewMode(ChartMode))], [text("График")]),
+    button([class(simple_class), on_click(SetViewMode(SimpleMode))], [
+      text("Простой"),
+    ]),
+    button([class(chart_class), on_click(SetViewMode(ChartMode))], [
+      text("График"),
+    ]),
   ])
 }
 
@@ -665,7 +735,10 @@ fn format_n(n: Int) -> String {
 /// Кнопка настроек инвентаря с выпадающим меню
 fn view_inventory_settings_button(model: Model) -> Element(Msg) {
   div([class("inventory-settings-wrapper")], [
-    button([class("inventory-settings-btn"), on_click(ToggleInventorySettingsMenu)], [text("⚙")]),
+    button(
+      [class("inventory-settings-btn"), on_click(ToggleInventorySettingsMenu)],
+      [text("⚙")],
+    ),
     case model.inventory_settings_menu_open {
       True -> view_inventory_settings_menu()
       False -> text("")
@@ -676,9 +749,15 @@ fn view_inventory_settings_button(model: Model) -> Element(Msg) {
 /// Выпадающее меню настроек инвентаря
 fn view_inventory_settings_menu() -> Element(Msg) {
   div([class("chart-settings-menu")], [
-    button([class("settings-menu-btn"), on_click(InventoryFillAll)], [text("Добавить все")]),
-    button([class("settings-menu-btn"), on_click(InventoryClearAll)], [text("Убрать все")]),
-    button([class("settings-menu-btn"), on_click(InventoryResetCounts)], [text("Сбросить счётчики")]),
+    button([class("settings-menu-btn"), on_click(InventoryFillAll)], [
+      text("Добавить все"),
+    ]),
+    button([class("settings-menu-btn"), on_click(InventoryClearAll)], [
+      text("Убрать все"),
+    ]),
+    button([class("settings-menu-btn"), on_click(InventoryResetCounts)], [
+      text("Сбросить счётчики"),
+    ]),
   ])
 }
 
@@ -701,21 +780,71 @@ fn view_inventory_filters(model: Model) -> Element(Msg) {
     // Фильтр по фракции
     div([class("filter-group")], [
       label([], [text("Фракция:")]),
-      select([on_change(fn(s) { InventorySetFilterFaction(inventory_view.parse_faction_filter(s)) })], [
-        option([value("all"), selected(model.inventory_filter_faction == None)], "Все"),
-        option([value("light"), selected(model.inventory_filter_faction == Some(Light))], "Свет"),
-        option([value("dark"), selected(model.inventory_filter_faction == Some(Dark))], "Тьма"),
-      ]),
+      select(
+        [
+          on_change(fn(s) {
+            InventorySetFilterFaction(inventory_view.parse_faction_filter(s))
+          }),
+        ],
+        [
+          option(
+            [value("all"), selected(model.inventory_filter_faction == None)],
+            "Все",
+          ),
+          option(
+            [
+              value("light"),
+              selected(model.inventory_filter_faction == Some(Light)),
+            ],
+            "Свет",
+          ),
+          option(
+            [
+              value("dark"),
+              selected(model.inventory_filter_faction == Some(Dark)),
+            ],
+            "Тьма",
+          ),
+        ],
+      ),
     ]),
     // Фильтр по редкости
     div([class("filter-group")], [
       label([], [text("Редкость:")]),
-      select([on_change(fn(s) { InventorySetFilterColor(inventory_view.parse_color_filter(s)) })], [
-        option([value("all"), selected(model.inventory_filter_color == None)], "Все"),
-        option([value("blue"), selected(model.inventory_filter_color == Some(Blue))], "Синий"),
-        option([value("green"), selected(model.inventory_filter_color == Some(Green))], "Зелёный"),
-        option([value("purple"), selected(model.inventory_filter_color == Some(Purple))], "Фиолетовый"),
-      ]),
+      select(
+        [
+          on_change(fn(s) {
+            InventorySetFilterColor(inventory_view.parse_color_filter(s))
+          }),
+        ],
+        [
+          option(
+            [value("all"), selected(model.inventory_filter_color == None)],
+            "Все",
+          ),
+          option(
+            [
+              value("blue"),
+              selected(model.inventory_filter_color == Some(Blue)),
+            ],
+            "Синий",
+          ),
+          option(
+            [
+              value("green"),
+              selected(model.inventory_filter_color == Some(Green)),
+            ],
+            "Зелёный",
+          ),
+          option(
+            [
+              value("purple"),
+              selected(model.inventory_filter_color == Some(Purple)),
+            ],
+            "Фиолетовый",
+          ),
+        ],
+      ),
     ]),
     // Счётчик вещей с меню статистики и кнопка настроек
     div([class("filter-group inventory-stats")], [
@@ -726,11 +855,15 @@ fn view_inventory_filters(model: Model) -> Element(Msg) {
 }
 
 /// Кнопка статистики с выпадающим меню
-fn view_inventory_stats_button(model: Model, stats: InventoryStats) -> Element(Msg) {
+fn view_inventory_stats_button(
+  model: Model,
+  stats: InventoryStats,
+) -> Element(Msg) {
   div([class("inventory-stats-wrapper")], [
     // Overlay для закрытия меню при клике вне
     case model.inventory_stats_menu_open {
-      True -> div([class("settings-overlay"), on_click(CloseInventoryStatsMenu)], [])
+      True ->
+        div([class("settings-overlay"), on_click(CloseInventoryStatsMenu)], [])
       False -> text("")
     },
     // Кнопка с иконкой ? и числом
@@ -749,7 +882,12 @@ fn view_inventory_stats_button(model: Model, stats: InventoryStats) -> Element(M
 fn view_inventory_table(model: Model) -> Element(Msg) {
   // Получить отфильтрованный список сетов
   let all_sets = generate_all_set_ids()
-  let filtered_sets = filter_sets(all_sets, model.inventory_filter_faction, model.inventory_filter_color)
+  let filtered_sets =
+    filter_sets(
+      all_sets,
+      model.inventory_filter_faction,
+      model.inventory_filter_color,
+    )
   let is_duplicates_mode = model.goal_type == GoalDuplicates
 
   let header_class = case is_duplicates_mode {
@@ -763,20 +901,29 @@ fn view_inventory_table(model: Model) -> Element(Msg) {
       div([class("col-entity")], [text("Юнит/Герой")]),
       div([class("col-color")], [text("Редк.")]),
       div([class("col-set")], [text("Сет")]),
-      div([class("col-slots")], [text(case is_duplicates_mode {
-        True -> "С1 С2 С3 С4"
-        False -> "Слоты"
-      })]),
+      div([class("col-slots")], [
+        text(case is_duplicates_mode {
+          True -> "С1 С2 С3 С4"
+          False -> "Слоты"
+        }),
+      ]),
       div([class("col-progress")], [text("Прогр.")]),
     ]),
     // Строки данных
-    div([class("inventory-rows")],
-      list.map(filtered_sets, fn(set_id) { view_inventory_row(model, set_id, is_duplicates_mode) })
+    div(
+      [class("inventory-rows")],
+      list.map(filtered_sets, fn(set_id) {
+        view_inventory_row(model, set_id, is_duplicates_mode)
+      }),
     ),
   ])
 }
 
-fn view_inventory_row(model: Model, set_id: SetId, is_duplicates_mode: Bool) -> Element(Msg) {
+fn view_inventory_row(
+  model: Model,
+  set_id: SetId,
+  is_duplicates_mode: Bool,
+) -> Element(Msg) {
   let slots = sets_inventory.get_slots(model.inventory, set_id)
   let counts = sets_inventory.get_counts(model.inventory, set_id)
   let SetId(name, entity_type, color, set_num) = set_id
@@ -795,7 +942,9 @@ fn view_inventory_row(model: Model, set_id: SetId, is_duplicates_mode: Bool) -> 
 
   div([class(row_class)], [
     div([class("col-entity")], [text(name)]),
-    div([class("col-color " <> inventory_view.color_class(color))], [text(inventory_view.color_short(color))]),
+    div([class("col-color " <> inventory_view.color_class(color))], [
+      text(inventory_view.color_short(color)),
+    ]),
     div([class("col-set")], [text(int.to_string(set_num))]),
     div([class("col-slots")], case is_duplicates_mode {
       True -> [
@@ -817,7 +966,11 @@ fn view_inventory_row(model: Model, set_id: SetId, is_duplicates_mode: Bool) -> 
   ])
 }
 
-fn view_inv_slot_checkbox(set_id: SetId, slot: Int, is_checked: Bool) -> Element(Msg) {
+fn view_inv_slot_checkbox(
+  set_id: SetId,
+  slot: Int,
+  is_checked: Bool,
+) -> Element(Msg) {
   input([
     type_("checkbox"),
     checked(is_checked),
@@ -825,7 +978,11 @@ fn view_inv_slot_checkbox(set_id: SetId, slot: Int, is_checked: Bool) -> Element
   ])
 }
 
-fn view_inv_slot_count_input(set_id: SetId, slot: Int, count: Int) -> Element(Msg) {
+fn view_inv_slot_count_input(
+  set_id: SetId,
+  slot: Int,
+  count: Int,
+) -> Element(Msg) {
   div([class("slot-count-wrapper")], [
     span([class("slot-label-mobile")], [text("С" <> int.to_string(slot))]),
     input([
@@ -837,7 +994,6 @@ fn view_inv_slot_count_input(set_id: SetId, slot: Int, count: Int) -> Element(Ms
     ]),
   ])
 }
-
 
 // ============================================================================
 // Панель профилей
@@ -889,8 +1045,12 @@ fn view_save_profile_section(model: Model) -> Element(Msg) {
       html.p([], [text("Текущий инвентарь:")]),
       span([class("stat-item")], [text("Всего: " <> int.to_string(stats.total))]),
       span([class("stat-item blue")], [text("С: " <> int.to_string(stats.blue))]),
-      span([class("stat-item green")], [text("З: " <> int.to_string(stats.green))]),
-      span([class("stat-item purple")], [text("Ф: " <> int.to_string(stats.purple))]),
+      span([class("stat-item green")], [
+        text("З: " <> int.to_string(stats.green)),
+      ]),
+      span([class("stat-item purple")], [
+        text("Ф: " <> int.to_string(stats.purple)),
+      ]),
     ]),
     button(
       [
@@ -898,10 +1058,12 @@ fn view_save_profile_section(model: Model) -> Element(Msg) {
         on_click(OpenProfileSaveDialog),
         attribute.disabled(is_full),
       ],
-      [text(case is_full {
-        True -> "Лимит профилей (" <> int.to_string(max_profiles) <> ")"
-        False -> "Сохранить текущий"
-      })],
+      [
+        text(case is_full {
+          True -> "Лимит профилей (" <> int.to_string(max_profiles) <> ")"
+          False -> "Сохранить текущий"
+        }),
+      ],
     ),
   ])
 }
@@ -909,12 +1071,15 @@ fn view_save_profile_section(model: Model) -> Element(Msg) {
 /// Список профилей
 fn view_profiles_list(model: Model) -> Element(Msg) {
   case list.length(model.saved_profiles) {
-    0 -> div([class("no-profiles-message")], [
-      text("Нет сохранённых профилей"),
-    ])
-    _ -> div([class("profiles-list")],
-      list.map(model.saved_profiles, view_profile_item)
-    )
+    0 ->
+      div([class("no-profiles-message")], [
+        text("Нет сохранённых профилей"),
+      ])
+    _ ->
+      div(
+        [class("profiles-list")],
+        list.map(model.saved_profiles, view_profile_item),
+      )
   }
 }
 
@@ -926,19 +1091,30 @@ fn view_profile_item(profile: Profile) -> Element(Msg) {
     div([class("profile-info")], [
       span([class("profile-name")], [text(profile.name)]),
       div([class("profile-stats")], [
-        span([class("stat-item")], [text("Всего: " <> int.to_string(stats.total))]),
-        span([class("stat-item blue")], [text("С: " <> int.to_string(stats.blue))]),
-        span([class("stat-item green")], [text("З: " <> int.to_string(stats.green))]),
-        span([class("stat-item purple")], [text("Ф: " <> int.to_string(stats.purple))]),
+        span([class("stat-item")], [
+          text("Всего: " <> int.to_string(stats.total)),
+        ]),
+        span([class("stat-item blue")], [
+          text("С: " <> int.to_string(stats.blue)),
+        ]),
+        span([class("stat-item green")], [
+          text("З: " <> int.to_string(stats.green)),
+        ]),
+        span([class("stat-item purple")], [
+          text("Ф: " <> int.to_string(stats.purple)),
+        ]),
       ]),
     ]),
     div([class("profile-actions")], [
       button([class("load-profile-btn"), on_click(LoadProfile(profile.id))], [
         text("Загрузить"),
       ]),
-      button([class("delete-profile-btn"), on_click(DeleteProfile(profile.id))], [
-        text("x"),
-      ]),
+      button(
+        [class("delete-profile-btn"), on_click(DeleteProfile(profile.id))],
+        [
+          text("x"),
+        ],
+      ),
     ]),
   ])
 }
@@ -966,15 +1142,27 @@ fn view_profile_save_dialog(model: Model) -> Element(Msg) {
             div([class("inventory-preview")], [
               html.h3([], [text("Статистика инвентаря")]),
               html.p([], [text("Всего вещей: " <> int.to_string(stats.total))]),
-              html.p([class("blue")], [text("Синих: " <> int.to_string(stats.blue))]),
-              html.p([class("green")], [text("Зелёных: " <> int.to_string(stats.green))]),
-              html.p([class("purple")], [text("Фиолетовых: " <> int.to_string(stats.purple))]),
+              html.p([class("blue")], [
+                text("Синих: " <> int.to_string(stats.blue)),
+              ]),
+              html.p([class("green")], [
+                text("Зелёных: " <> int.to_string(stats.green)),
+              ]),
+              html.p([class("purple")], [
+                text("Фиолетовых: " <> int.to_string(stats.purple)),
+              ]),
             ]),
           ]),
           div([class("dialog-actions")], [
-            button([class("btn btn-secondary cancel-btn"), on_click(CloseProfileSaveDialog)], [
-              text("Отмена"),
-            ]),
+            button(
+              [
+                class("btn btn-secondary cancel-btn"),
+                on_click(CloseProfileSaveDialog),
+              ],
+              [
+                text("Отмена"),
+              ],
+            ),
             button([class("btn btn-primary"), on_click(SaveCurrentProfile)], [
               text("Сохранить"),
             ]),
@@ -984,4 +1172,3 @@ fn view_profile_save_dialog(model: Model) -> Element(Msg) {
     }
   }
 }
-

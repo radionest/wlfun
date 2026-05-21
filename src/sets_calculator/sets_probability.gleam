@@ -1,20 +1,18 @@
-import gleam/list
-import gleam/int
-import gleam/float
-import gleam/result
-import gleam/option.{None, Some}
 import gleam/dict
-import sets_calculator/sets_model.{
-  type Model,
-  GoalSpecificSet, GoalAnySetOnEntity, GoalAnySetOnFaction, GoalFirstSetOfColor,
-  GoalDuplicates,
-}
-import sets_calculator/sets_inventory.{type Inventory, count_owned, get_slots}
+import gleam/float
+import gleam/int
+import gleam/list
+import gleam/option.{None, Some}
+import gleam/result
 import items_calculator/game_data.{type Faction}
 import sets_calculator/sets_game_data.{
-  type SetId,
-  pool_size, items_needed, items_per_set,
-  set_ids_for_entity, set_ids_for_faction, set_ids_for_color,
+  type SetId, items_needed, items_per_set, pool_size, set_ids_for_color,
+  set_ids_for_entity, set_ids_for_faction,
+}
+import sets_calculator/sets_inventory.{type Inventory, count_owned, get_slots}
+import sets_calculator/sets_model.{
+  type Model, GoalAnySetOnEntity, GoalAnySetOnFaction, GoalDuplicates,
+  GoalFirstSetOfColor, GoalSpecificSet,
 }
 
 /// Расчет кривой вероятности для заданной цели
@@ -36,11 +34,12 @@ pub fn calculate_for_goal(model: Model) -> List(#(Int, Float)) {
       // Любой из 2 сетов на сущность - учитываем оба сета из инвентаря
       case model.selected_entity {
         Some(name) -> {
-          let set_ids = set_ids_for_entity(
-            name,
-            model.selected_entity_type,
-            model.selected_color,
-          )
+          let set_ids =
+            set_ids_for_entity(
+              name,
+              model.selected_entity_type,
+              model.selected_color,
+            )
           calculate_any_of_sets_curve_with_inventory(
             pool,
             set_ids,
@@ -101,7 +100,8 @@ fn calculate_single_set_curve(
   let t = int.to_float(target)
 
   // Начальное распределение: точно initial_owned вещей
-  let initial_dp = list.range(0, target)
+  let initial_dp =
+    list.range(0, target)
     |> list.map(fn(j) {
       case j == initial_owned {
         True -> 1.0
@@ -110,7 +110,9 @@ fn calculate_single_set_curve(
     })
 
   // Строим кривую
-  build_curve(initial_dp, p, t, needed, max_n, 0, [#(0, prob_at_least(initial_dp, needed))])
+  build_curve(initial_dp, p, t, needed, max_n, 0, [
+    #(0, prob_at_least(initial_dp, needed)),
+  ])
 }
 
 fn build_curve(
@@ -128,7 +130,10 @@ fn build_curve(
       let new_dp = step_dp(dp, pool, target)
       let prob = prob_at_least(new_dp, needed)
       let new_n = current_n + 1
-      build_curve(new_dp, pool, target, needed, max_n, new_n, [#(new_n, prob), ..acc])
+      build_curve(new_dp, pool, target, needed, max_n, new_n, [
+        #(new_n, prob),
+        ..acc
+      ])
     }
   }
 }
@@ -183,12 +188,14 @@ pub fn calculate_any_of_sets_curve_with_inventory(
   max_n: Int,
 ) -> List(#(Int, Float)) {
   // Фильтруем сеты: оставляем только те, которые ещё не собраны
-  let incomplete_set_ids = list.filter(set_ids, fn(set_id) {
-    let owned_slots = get_slots(inventory, set_id)
-    let initial_owned = count_owned(owned_slots)
-    let needed = items_needed(set_id.entity_type)
-    initial_owned < needed  // Сет ещё не собран
-  })
+  let incomplete_set_ids =
+    list.filter(set_ids, fn(set_id) {
+      let owned_slots = get_slots(inventory, set_id)
+      let initial_owned = count_owned(owned_slots)
+      let needed = items_needed(set_id.entity_type)
+      initial_owned < needed
+      // Сет ещё не собран
+    })
 
   // Если все сеты уже собраны - возвращаем нулевую кривую
   case list.is_empty(incomplete_set_ids) {
@@ -248,8 +255,10 @@ pub fn calculate_duplicates_curve(
   min_items: Int,
   max_attempts: Int,
 ) -> List(#(Int, Float)) {
-  let pool = pool_size()  // 288
-  let p_item = 1.0 /. int.to_float(pool)  // 1/288
+  let pool = pool_size()
+  // 288
+  let p_item = 1.0 /. int.to_float(pool)
+  // 1/288
 
   list.range(0, max_attempts)
   |> list.map(fn(m) {
@@ -266,15 +275,16 @@ pub fn calculate_duplicates_curve(
 fn prob_at_least_k_hits(n: Int, k: Int, p: Float) -> Float {
   case k <= 0 {
     True -> 1.0
-    False -> case k > n {
-      True -> 0.0
-      False -> {
-        // λ = n * p
-        let lambda = int.to_float(n) *. p
-        // P(X ≥ k) = 1 - P(X < k) = 1 - CDF(k-1)
-        1.0 -. poisson_cdf(k - 1, lambda)
+    False ->
+      case k > n {
+        True -> 0.0
+        False -> {
+          // λ = n * p
+          let lambda = int.to_float(n) *. p
+          // P(X ≥ k) = 1 - P(X < k) = 1 - CDF(k-1)
+          1.0 -. poisson_cdf(k - 1, lambda)
+        }
       }
-    }
   }
 }
 
@@ -282,29 +292,31 @@ fn prob_at_least_k_hits(n: Int, k: Int, p: Float) -> Float {
 /// Использует рекуррентную формулу P(i) = P(i-1) * λ / i для стабильности
 fn poisson_cdf(k: Int, lambda: Float) -> Float {
   case lambda <=. 0.0 {
-    True -> 1.0  // При λ=0, P(X=0) = 1
-    False -> case k < 0 {
-      True -> 0.0
-      False -> {
-        // e^(-λ)
-        let e_neg_lambda = float.exponential(0.0 -. lambda)
+    True -> 1.0
+    // При λ=0, P(X=0) = 1
+    False ->
+      case k < 0 {
+        True -> 0.0
+        False -> {
+          // e^(-λ)
+          let e_neg_lambda = float.exponential(0.0 -. lambda)
 
-        // Начинаем с P(0) = e^(-λ), накапливаем сумму
-        list.range(0, k)
-        |> list.fold(#(e_neg_lambda, e_neg_lambda), fn(acc, i) {
-          let #(p_i, sum) = acc
-          case i {
-            0 -> #(p_i, sum)
-            _ -> {
-              // P(i) = P(i-1) * λ / i
-              let new_p = p_i *. lambda /. int.to_float(i)
-              #(new_p, sum +. new_p)
+          // Начинаем с P(0) = e^(-λ), накапливаем сумму
+          list.range(0, k)
+          |> list.fold(#(e_neg_lambda, e_neg_lambda), fn(acc, i) {
+            let #(p_i, sum) = acc
+            case i {
+              0 -> #(p_i, sum)
+              _ -> {
+                // P(i) = P(i-1) * λ / i
+                let new_p = p_i *. lambda /. int.to_float(i)
+                #(new_p, sum +. new_p)
+              }
             }
-          }
-        })
-        |> fn(result) { result.1 }
+          })
+          |> fn(result) { result.1 }
+        }
       }
-    }
   }
 }
 
@@ -312,19 +324,21 @@ fn poisson_cdf(k: Int, lambda: Float) -> Float {
 /// Использует приближение Пуассона для численной стабильности
 fn binomial_at_least(n: Int, total: Int, prob: Float) -> Float {
   case prob <=. 0.0 {
-    True -> case n <= 0 {
-      True -> 1.0
-      False -> 0.0
-    }
-    False -> case prob >=. 1.0 {
-      True -> 1.0
-      False -> {
-        // λ = total * prob
-        let lambda = int.to_float(total) *. prob
-        // P(X ≥ n) = 1 - P(X < n) = 1 - CDF(n-1)
-        1.0 -. poisson_cdf(n - 1, lambda)
+    True ->
+      case n <= 0 {
+        True -> 1.0
+        False -> 0.0
       }
-    }
+    False ->
+      case prob >=. 1.0 {
+        True -> 1.0
+        False -> {
+          // λ = total * prob
+          let lambda = int.to_float(total) *. prob
+          // P(X ≥ n) = 1 - P(X < n) = 1 - CDF(n-1)
+          1.0 -. poisson_cdf(n - 1, lambda)
+        }
+      }
   }
 }
 
@@ -353,7 +367,8 @@ pub fn calculate_duplicates_bootstrap(
 
   list.range(0, max_attempts)
   |> list.map(fn(m) {
-    let prob = bootstrap_point(m, pool, min_duplicates, min_items, num_simulations)
+    let prob =
+      bootstrap_point(m, pool, min_duplicates, min_items, num_simulations)
     #(m, prob)
   })
 }
@@ -393,36 +408,48 @@ fn binomial_pmf(n: Int, p: Float) -> List(Float) {
         True -> {
           // p = 1.0: все n успешны, P(X=n) = 1.0
           list.range(0, n)
-          |> list.map(fn(k) { case k == n { True -> 1.0 False -> 0.0 } })
+          |> list.map(fn(k) {
+            case k == n {
+              True -> 1.0
+              False -> 0.0
+            }
+          })
         }
-        False -> case p <=. 0.0 {
-          True -> {
-            // p = 0.0: все n неуспешны, P(X=0) = 1.0
-            list.range(0, n)
-            |> list.map(fn(k) { case k == 0 { True -> 1.0 False -> 0.0 } })
-          }
-          False -> {
-            // Обычный случай: 0 < p < 1
-            let q = 1.0 -. p
-            // Используем рекуррентную формулу: P(k+1) = P(k) * (n-k)/(k+1) * p/q
-            // P(0) = q^n
-            let p0 = float_pow(q, n)
-            list.range(0, n)
-            |> list.fold(#([], p0), fn(acc, k) {
-              let #(probs, prev_prob) = acc
-              case k {
-                0 -> #([p0], p0)
-                _ -> {
-                  // P(k) = P(k-1) * (n-k+1)/k * p/q
-                  let ratio = int.to_float(n - k + 1) /. int.to_float(k) *. p /. q
-                  let pk = prev_prob *. ratio
-                  #(list.append(probs, [pk]), pk)
+        False ->
+          case p <=. 0.0 {
+            True -> {
+              // p = 0.0: все n неуспешны, P(X=0) = 1.0
+              list.range(0, n)
+              |> list.map(fn(k) {
+                case k == 0 {
+                  True -> 1.0
+                  False -> 0.0
                 }
-              }
-            })
-            |> fn(result) { result.0 }
+              })
+            }
+            False -> {
+              // Обычный случай: 0 < p < 1
+              let q = 1.0 -. p
+              // Используем рекуррентную формулу: P(k+1) = P(k) * (n-k)/(k+1) * p/q
+              // P(0) = q^n
+              let p0 = float_pow(q, n)
+              list.range(0, n)
+              |> list.fold(#([], p0), fn(acc, k) {
+                let #(probs, prev_prob) = acc
+                case k {
+                  0 -> #([p0], p0)
+                  _ -> {
+                    // P(k) = P(k-1) * (n-k+1)/k * p/q
+                    let ratio =
+                      int.to_float(n - k + 1) /. int.to_float(k) *. p /. q
+                    let pk = prev_prob *. ratio
+                    #(list.append(probs, [pk]), pk)
+                  }
+                }
+              })
+              |> fn(result) { result.0 }
+            }
           }
-        }
       }
     }
   }
@@ -490,9 +517,14 @@ pub fn calculate_duplicates_curve_with_inventory(
 
   list.range(0, max_attempts)
   |> list.map(fn(m) {
-    let prob = calculate_point_with_convolution(
-      m, min_duplicates, min_items, groups, p_item
-    )
+    let prob =
+      calculate_point_with_convolution(
+        m,
+        min_duplicates,
+        min_items,
+        groups,
+        p_item,
+      )
     #(m, prob)
   })
 }
@@ -505,12 +537,13 @@ fn calculate_point_with_convolution(
   p_item: Float,
 ) -> Float {
   // Для каждой группы строим биномиальное распределение
-  let distributions = list.map(groups, fn(group) {
-    let #(initial_count, num_items) = group
-    let needed = int.max(0, min_duplicates - initial_count)
-    let p_success = prob_at_least_k_hits(attempts, needed, p_item)
-    binomial_pmf(num_items, p_success)
-  })
+  let distributions =
+    list.map(groups, fn(group) {
+      let #(initial_count, num_items) = group
+      let needed = int.max(0, min_duplicates - initial_count)
+      let p_success = prob_at_least_k_hits(attempts, needed, p_item)
+      binomial_pmf(num_items, p_success)
+    })
 
   // Свёртка всех распределений
   let total_dist = convolve_all(distributions)
@@ -545,9 +578,15 @@ pub fn calculate_duplicates_bootstrap_with_inventory(
 
   list.range(0, max_attempts)
   |> list.map(fn(m) {
-    let prob = bootstrap_point_with_initial_ffi(
-      m, pool, min_duplicates, min_items, num_simulations, initial_counts
-    )
+    let prob =
+      bootstrap_point_with_initial_ffi(
+        m,
+        pool,
+        min_duplicates,
+        min_items,
+        num_simulations,
+        initial_counts,
+      )
     #(m, prob)
   })
 }
@@ -576,5 +615,10 @@ pub fn calculate_any_faction_set_curve(
 ) -> List(#(Int, Float)) {
   let pool = pool_size()
   let set_ids = set_ids_for_faction(faction, color)
-  calculate_any_of_sets_curve_with_inventory(pool, set_ids, inventory, max_attempts)
+  calculate_any_of_sets_curve_with_inventory(
+    pool,
+    set_ids,
+    inventory,
+    max_attempts,
+  )
 }

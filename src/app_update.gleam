@@ -1,13 +1,16 @@
-import lustre/effect.{type Effect}
-import app_model.{type AppModel, type AppMsg, AppModel, NavigateTo, ToggleTheme, BpMsg, ItemsMsg, SetsMsg, ArmyMsg}
-import bp_calculator/bp_update
-import items_calculator/items_update
-import items_calculator/game_data
-import sets_calculator/sets_update
-import sets_calculator/sets_model
-import army_simulator/army_update
+import app_model.{
+  type AppModel, type AppMsg, AppModel, ArmyMsg, BpMsg, ItemsMsg, NavigateTo,
+  SetsMsg, ToggleTheme,
+}
 import army_simulator/army_model
-import theme.{Light, Dark}
+import army_simulator/army_update
+import bp_calculator/bp_update
+import items_calculator/game_data
+import items_calculator/items_update
+import lustre/effect.{type Effect}
+import sets_calculator/sets_model
+import sets_calculator/sets_update
+import theme.{Dark, Light}
 
 pub fn update(model: AppModel, msg: AppMsg) -> #(AppModel, Effect(AppMsg)) {
   case msg {
@@ -45,27 +48,56 @@ pub fn update(model: AppModel, msg: AppMsg) -> #(AppModel, Effect(AppMsg)) {
         True -> theme.save(new_theme)
         False -> Nil
       }
-      #(AppModel(..model, items_model: new_items_model, theme: new_theme), effect.none())
+      #(
+        AppModel(..model, items_model: new_items_model, theme: new_theme),
+        effect.none(),
+      )
     }
 
     // Делегирование в Sets калькулятор
     SetsMsg(sets_msg) -> {
-      let #(new_sets_model, sets_effect) = sets_update.update(model.sets_model, sets_msg)
+      let #(new_sets_model, sets_effect) =
+        sets_update.update(model.sets_model, sets_msg)
       // Синхронизируем инвентарь с army_model
-      let new_army_model = army_update.sync_inventory(model.army_model, new_sets_model.inventory)
+      let new_army_model =
+        army_update.sync_inventory(model.army_model, new_sets_model.inventory)
       // Синхронизируем профили с army_model
-      let new_army_model = army_model.Model(..new_army_model, saved_profiles: new_sets_model.saved_profiles)
-      #(AppModel(..model, sets_model: new_sets_model, army_model: new_army_model), effect.map(sets_effect, SetsMsg))
+      let new_army_model =
+        army_model.Model(
+          ..new_army_model,
+          saved_profiles: new_sets_model.saved_profiles,
+        )
+      #(
+        AppModel(
+          ..model,
+          sets_model: new_sets_model,
+          army_model: new_army_model,
+        ),
+        effect.map(sets_effect, SetsMsg),
+      )
     }
 
     // Делегирование в Army симулятор
     ArmyMsg(army_msg) -> {
-      let #(new_army_model, army_effect) = army_update.update(model.army_model, army_msg)
+      let #(new_army_model, army_effect) =
+        army_update.update(model.army_model, army_msg)
       // Синхронизируем инвентарь с sets_model
-      let new_sets_model = sets_update.sync_inventory(model.sets_model, new_army_model.inventory)
+      let new_sets_model =
+        sets_update.sync_inventory(model.sets_model, new_army_model.inventory)
       // Синхронизируем профили с sets_model
-      let new_sets_model = sets_model.Model(..new_sets_model, saved_profiles: new_army_model.saved_profiles)
-      #(AppModel(..model, army_model: new_army_model, sets_model: new_sets_model), effect.map(army_effect, ArmyMsg))
+      let new_sets_model =
+        sets_model.Model(
+          ..new_sets_model,
+          saved_profiles: new_army_model.saved_profiles,
+        )
+      #(
+        AppModel(
+          ..model,
+          army_model: new_army_model,
+          sets_model: new_sets_model,
+        ),
+        effect.map(army_effect, ArmyMsg),
+      )
     }
   }
 }

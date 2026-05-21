@@ -57,7 +57,8 @@ pub fn load() -> Option(SavedSettings) {
   case plinth_storage.local() {
     Error(_) -> None
     Ok(raw_storage) -> {
-      let storage = varasto.new(raw_storage, settings_decoder(), settings_encoder)
+      let storage =
+        varasto.new(raw_storage, settings_decoder(), settings_encoder)
       case varasto.get(storage, storage_key) {
         Ok(settings) -> Some(settings)
         Error(_) -> None
@@ -79,16 +80,18 @@ pub fn save(
   case plinth_storage.local() {
     Error(_) -> Nil
     Ok(raw_storage) -> {
-      let storage = varasto.new(raw_storage, settings_decoder(), settings_encoder)
-      let settings = SavedSettings(
-        mode: mode,
-        current_level: current_level,
-        current_progress: current_progress,
-        daily_points: daily_points,
-        days_remaining: days_remaining,
-        weekly_rewards_remaining: weekly_rewards_remaining,
-        target_level: target_level,
-      )
+      let storage =
+        varasto.new(raw_storage, settings_decoder(), settings_encoder)
+      let settings =
+        SavedSettings(
+          mode: mode,
+          current_level: current_level,
+          current_progress: current_progress,
+          daily_points: daily_points,
+          days_remaining: days_remaining,
+          weekly_rewards_remaining: weekly_rewards_remaining,
+          target_level: target_level,
+        )
       let _ = varasto.set(storage, storage_key, settings)
       Nil
     }

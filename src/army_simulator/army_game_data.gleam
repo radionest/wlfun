@@ -1,5 +1,5 @@
 import gleam/list
-import items_calculator/game_data.{type Faction, type Unit, Light, Dark}
+import items_calculator/game_data.{type Faction, type Unit, Dark, Light}
 import sets_calculator/sets_game_data
 
 /// Константы
@@ -23,11 +23,7 @@ pub type EntityType {
 
 /// Сущность армии
 pub type ArmyEntity {
-  ArmyEntity(
-    name: String,
-    entity_type: EntityType,
-    slots_needed: Int,
-  )
+  ArmyEntity(name: String, entity_type: EntityType, slots_needed: Int)
 }
 
 /// Юниты фракции Свет
@@ -59,12 +55,20 @@ pub fn army_entities(faction: Faction) -> List(ArmyEntity) {
 
   let unit_entities =
     list.map(units, fn(name) {
-      ArmyEntity(name: name, entity_type: UnitEntity, slots_needed: slots_per_unit)
+      ArmyEntity(
+        name: name,
+        entity_type: UnitEntity,
+        slots_needed: slots_per_unit,
+      )
     })
 
   let hero_entities =
     list.map(heroes, fn(name) {
-      ArmyEntity(name: name, entity_type: HeroEntity, slots_needed: slots_per_hero)
+      ArmyEntity(
+        name: name,
+        entity_type: HeroEntity,
+        slots_needed: slots_per_hero,
+      )
     })
 
   list.append(unit_entities, hero_entities)
@@ -83,8 +87,10 @@ pub fn army_size() -> Int {
 /// Индекс сущности в пуле (для расчёта позиции предметов)
 pub fn entity_pool_index(entity_name: String, faction: Faction) -> Int {
   let entities = army_entities(faction)
-  case list.index_map(entities, fn(e, i) { #(e.name, i) })
-       |> list.find(fn(pair) { pair.0 == entity_name }) {
+  case
+    list.index_map(entities, fn(e, i) { #(e.name, i) })
+    |> list.find(fn(pair) { pair.0 == entity_name })
+  {
     Ok(#(_, idx)) -> idx
     Error(_) -> 0
   }

@@ -1,33 +1,31 @@
-import gleam/int
-import gleam/list
-import gleam/option.{None, Some}
-import lustre/effect.{type Effect}
 import army_simulator/army_model.{
-  type Model, type Msg, CloseSaveDialog, CloseProfileSaveDialog, CloseSettingsMenu,
-  CloseInventoryStatsMenu, CloseInventorySettingsMenu,
-  ComparisonState, CopyShareLink, DeleteProfile, DeleteSimulation,
-  HideShareNotification, InventoryClearAll, InventoryFillAll,
-  InventorySetFilterColor, InventorySetFilterFaction, InventoryToggleSlot, LoadProfile, Model,
+  type Model, type Msg, CloseInventorySettingsMenu, CloseInventoryStatsMenu,
+  CloseProfileSaveDialog, CloseSaveDialog, CloseSettingsMenu, ComparisonState,
+  CopyShareLink, DeleteProfile, DeleteSimulation, HideShareNotification,
+  InventoryClearAll, InventoryFillAll, InventorySetFilterColor,
+  InventorySetFilterFaction, InventoryToggleSlot, LoadProfile, Model,
   OpenProfileSaveDialog, OpenSaveDialog, Profile, ProfilesLoaded, RunSimulation,
   SaveCurrentProfile, SaveCurrentSimulation, SavedSimulation, SelectFaction,
   SetBaseSimulation, SetBluePerMonth, SetChartDropSystem, SetGreenPerMonth,
   SetMonths, SetNumSimulations, SetProfileName, SetPurplePerMonth,
   SetSimulationName, SetViewMode, ShareLinkCopied, ShareLinkError,
-  SimulationProgress, SimulationResult,
-  SimulationsLoaded, ToggleComparisonPanel, ToggleInventoryPanel,
-  ToggleInventorySettingsMenu, ToggleInventoryStatsMenu,
+  SimulationProgress, SimulationResult, SimulationsLoaded, ToggleComparisonPanel,
+  ToggleInventoryPanel, ToggleInventorySettingsMenu, ToggleInventoryStatsMenu,
   TogglePercentiles, ToggleProfilesPanel, ToggleSettingsMenu,
-  ToggleSimulationVisibility,
-  WorkerError, WorkerReady,
+  ToggleSimulationVisibility, WorkerError, WorkerReady,
 }
-import army_simulator/army_worker
 import army_simulator/army_storage
+import army_simulator/army_worker
+import gleam/int
+import gleam/list
+import gleam/option.{None, Some}
 import items_calculator/game_data
+import lustre/effect.{type Effect}
+import plinth/browser/clipboard
+import sets_calculator/sets_game_data
 import sets_calculator/sets_inventory.{type Inventory}
 import sets_calculator/sets_storage
-import sets_calculator/sets_game_data
 import sets_calculator/sets_uri
-import plinth/browser/clipboard
 
 // FFI для генерации ID
 @external(javascript, "../army_ffi.mjs", "generateSimulationId")
@@ -51,7 +49,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SetBluePerMonth(value) -> {
       case int.parse(value) {
         Ok(n) -> {
-          let new_params = army_model.SimulationParams(..model.params, blue_per_month: n)
+          let new_params =
+            army_model.SimulationParams(..model.params, blue_per_month: n)
           #(Model(..model, params: new_params), effect.none())
         }
         Error(_) -> #(model, effect.none())
@@ -61,7 +60,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SetGreenPerMonth(value) -> {
       case int.parse(value) {
         Ok(n) -> {
-          let new_params = army_model.SimulationParams(..model.params, green_per_month: n)
+          let new_params =
+            army_model.SimulationParams(..model.params, green_per_month: n)
           #(Model(..model, params: new_params), effect.none())
         }
         Error(_) -> #(model, effect.none())
@@ -71,7 +71,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SetPurplePerMonth(value) -> {
       case int.parse(value) {
         Ok(n) -> {
-          let new_params = army_model.SimulationParams(..model.params, purple_per_month: n)
+          let new_params =
+            army_model.SimulationParams(..model.params, purple_per_month: n)
           #(Model(..model, params: new_params), effect.none())
         }
         Error(_) -> #(model, effect.none())
@@ -81,7 +82,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SetMonths(value) -> {
       case int.parse(value) {
         Ok(n) -> {
-          let new_params = army_model.SimulationParams(..model.params, months: n)
+          let new_params =
+            army_model.SimulationParams(..model.params, months: n)
           #(Model(..model, params: new_params), effect.none())
         }
         Error(_) -> #(model, effect.none())
@@ -91,7 +93,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SetNumSimulations(value) -> {
       case int.parse(value) {
         Ok(n) -> {
-          let new_params = army_model.SimulationParams(..model.params, num_simulations: n)
+          let new_params =
+            army_model.SimulationParams(..model.params, num_simulations: n)
           #(Model(..model, params: new_params), effect.none())
         }
         Error(_) -> #(model, effect.none())
@@ -101,16 +104,33 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     RunSimulation -> {
       case model.worker {
         Some(w) -> {
-          army_worker.run_simulation(w, model.params, model.selected_faction, model.inventory)
+          army_worker.run_simulation(
+            w,
+            model.params,
+            model.selected_faction,
+            model.inventory,
+          )
           #(
-            Model(..model, is_computing: True, progress: 0.0, comparison_result: None, equipment_curve_result: None, error_message: None),
+            Model(
+              ..model,
+              is_computing: True,
+              progress: 0.0,
+              comparison_result: None,
+              equipment_curve_result: None,
+              error_message: None,
+            ),
             effect.none(),
           )
         }
         None -> {
           // Worker ещё не готов, инициализируем
           #(
-            Model(..model, is_computing: True, progress: 0.0, error_message: None),
+            Model(
+              ..model,
+              is_computing: True,
+              progress: 0.0,
+              error_message: None,
+            ),
             army_worker.init_worker(),
           )
         }
@@ -121,7 +141,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       // Worker готов, если уже ждём вычислений - запускаем
       case model.is_computing {
         True -> {
-          army_worker.run_simulation(w, model.params, model.selected_faction, model.inventory)
+          army_worker.run_simulation(
+            w,
+            model.params,
+            model.selected_faction,
+            model.inventory,
+          )
           #(Model(..model, worker: Some(w)), effect.none())
         }
         False -> #(Model(..model, worker: Some(w)), effect.none())
@@ -134,13 +159,26 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     SimulationResult(result, eq_curve) -> {
       #(
-        Model(..model, comparison_result: Some(result), equipment_curve_result: eq_curve, is_computing: False, progress: 1.0),
+        Model(
+          ..model,
+          comparison_result: Some(result),
+          equipment_curve_result: eq_curve,
+          is_computing: False,
+          progress: 1.0,
+        ),
         effect.none(),
       )
     }
 
     WorkerError(err) -> {
-      #(Model(..model, is_computing: False, error_message: option.Some("Ошибка: " <> err)), effect.none())
+      #(
+        Model(
+          ..model,
+          is_computing: False,
+          error_message: option.Some("Ошибка: " <> err),
+        ),
+        effect.none(),
+      )
     }
 
     SetViewMode(mode) -> {
@@ -148,11 +186,15 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     }
 
     ToggleInventoryPanel -> {
-      #(Model(..model, inventory_panel_open: !model.inventory_panel_open), effect.none())
+      #(
+        Model(..model, inventory_panel_open: !model.inventory_panel_open),
+        effect.none(),
+      )
     }
 
     InventoryToggleSlot(set_id, slot) -> {
-      let new_inventory = sets_inventory.toggle_slot(model.inventory, set_id, slot)
+      let new_inventory =
+        sets_inventory.toggle_slot(model.inventory, set_id, slot)
       sets_storage.save(new_inventory)
       #(Model(..model, inventory: new_inventory), effect.none())
     }
@@ -168,11 +210,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         Some(f) -> Some(f)
         None -> Some(model.selected_faction)
       }
-      let filtered = sets_game_data.filter_sets(
-        all_sets,
-        faction_filter,
-        model.inventory_filter_color,
-      )
+      let filtered =
+        sets_game_data.filter_sets(
+          all_sets,
+          faction_filter,
+          model.inventory_filter_color,
+        )
       let new_inv = sets_inventory.fill_all_slots(model.inventory, filtered)
       sets_storage.save(new_inv)
       #(Model(..model, inventory: new_inv), effect.none())
@@ -184,11 +227,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         Some(f) -> Some(f)
         None -> Some(model.selected_faction)
       }
-      let filtered = sets_game_data.filter_sets(
-        all_sets,
-        faction_filter,
-        model.inventory_filter_color,
-      )
+      let filtered =
+        sets_game_data.filter_sets(
+          all_sets,
+          faction_filter,
+          model.inventory_filter_color,
+        )
       let new_inv = sets_inventory.clear_all_slots(model.inventory, filtered)
       sets_storage.save(new_inv)
       #(Model(..model, inventory: new_inv), effect.none())
@@ -197,11 +241,16 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     // === Сохранение симуляций ===
     OpenSaveDialog -> {
       let default_name =
-        "Симуляция " <> int.to_string(
+        "Симуляция "
+        <> int.to_string(
           list.length(model.comparison_state.saved_simulations) + 1,
         )
       #(
-        Model(..model, save_dialog_open: True, pending_simulation_name: default_name),
+        Model(
+          ..model,
+          save_dialog_open: True,
+          pending_simulation_name: default_name,
+        ),
         effect.none(),
       )
     }
@@ -217,7 +266,11 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SaveCurrentSimulation -> {
       case model.comparison_result {
         Some(result) -> {
-          let snapshot = army_worker.calculate_initial_sets(model.inventory, model.selected_faction)
+          let snapshot =
+            army_worker.calculate_initial_sets(
+              model.inventory,
+              model.selected_faction,
+            )
           let new_sim =
             SavedSimulation(
               id: generate_id(),
@@ -235,7 +288,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
             )
           army_storage.save(new_sims)
           let new_state =
-            ComparisonState(..model.comparison_state, saved_simulations: new_sims)
+            ComparisonState(
+              ..model.comparison_state,
+              saved_simulations: new_sims,
+            )
           #(
             Model(..model, comparison_state: new_state, save_dialog_open: False),
             effect.none(),
@@ -247,7 +303,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     DeleteSimulation(id) -> {
       let new_sims =
-        army_storage.remove_simulation(model.comparison_state.saved_simulations, id)
+        army_storage.remove_simulation(
+          model.comparison_state.saved_simulations,
+          id,
+        )
       army_storage.save(new_sims)
       // Убираем из visible_ids и base_id если нужно
       let new_visible =
@@ -315,7 +374,11 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       let default_name =
         "Профиль " <> int.to_string(list.length(model.saved_profiles) + 1)
       #(
-        Model(..model, profile_save_dialog_open: True, pending_profile_name: default_name),
+        Model(
+          ..model,
+          profile_save_dialog_open: True,
+          pending_profile_name: default_name,
+        ),
         effect.none(),
       )
     }
@@ -336,10 +399,15 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
           inventory: model.inventory,
           created_at: current_timestamp(),
         )
-      let new_profiles = army_storage.add_profile(model.saved_profiles, new_profile)
+      let new_profiles =
+        army_storage.add_profile(model.saved_profiles, new_profile)
       army_storage.save_profiles(new_profiles)
       #(
-        Model(..model, saved_profiles: new_profiles, profile_save_dialog_open: False),
+        Model(
+          ..model,
+          saved_profiles: new_profiles,
+          profile_save_dialog_open: False,
+        ),
         effect.none(),
       )
     }
@@ -367,7 +435,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     // === Меню настроек симуляции ===
     ToggleSettingsMenu -> {
-      #(Model(..model, settings_menu_open: !model.settings_menu_open), effect.none())
+      #(
+        Model(..model, settings_menu_open: !model.settings_menu_open),
+        effect.none(),
+      )
     }
 
     CloseSettingsMenu -> {
@@ -376,7 +447,13 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     // === Меню статистики инвентаря ===
     ToggleInventoryStatsMenu -> {
-      #(Model(..model, inventory_stats_menu_open: !model.inventory_stats_menu_open), effect.none())
+      #(
+        Model(
+          ..model,
+          inventory_stats_menu_open: !model.inventory_stats_menu_open,
+        ),
+        effect.none(),
+      )
     }
 
     CloseInventoryStatsMenu -> {
@@ -394,15 +471,24 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       // Копируем в буфер обмена (результат Promise игнорируем)
       let _ = clipboard.write_text(url)
       // Показываем уведомление сразу (оптимистично)
-      #(Model(..model, share_notification: Some("Ссылка скопирована!")), effect.none())
+      #(
+        Model(..model, share_notification: Some("Ссылка скопирована!")),
+        effect.none(),
+      )
     }
 
     ShareLinkCopied -> {
-      #(Model(..model, share_notification: Some("Ссылка скопирована!")), effect.none())
+      #(
+        Model(..model, share_notification: Some("Ссылка скопирована!")),
+        effect.none(),
+      )
     }
 
     ShareLinkError(_) -> {
-      #(Model(..model, share_notification: Some("Ошибка копирования")), effect.none())
+      #(
+        Model(..model, share_notification: Some("Ошибка копирования")),
+        effect.none(),
+      )
     }
 
     HideShareNotification -> {
@@ -411,7 +497,13 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     // === Меню настроек инвентаря ===
     ToggleInventorySettingsMenu -> {
-      #(Model(..model, inventory_settings_menu_open: !model.inventory_settings_menu_open), effect.none())
+      #(
+        Model(
+          ..model,
+          inventory_settings_menu_open: !model.inventory_settings_menu_open,
+        ),
+        effect.none(),
+      )
     }
 
     CloseInventorySettingsMenu -> {
@@ -419,7 +511,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     }
 
     TogglePercentiles -> {
-      #(Model(..model, show_percentiles: !model.show_percentiles), effect.none())
+      #(
+        Model(..model, show_percentiles: !model.show_percentiles),
+        effect.none(),
+      )
     }
   }
 }

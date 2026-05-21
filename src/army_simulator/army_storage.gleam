@@ -1,21 +1,22 @@
+import army_simulator/army_model.{
+  type AggregatedResult, type ComparisonResult, type DropSystem, type FinalStats,
+  type InitialSetsSnapshot, type Profile, type SavedSimulation,
+  type SimulationParams, type SystemResult, AggregatedResult, ComparisonResult,
+  FinalStats, InitialSetsSnapshot, NoDuplicates, Profile, SavedSimulation,
+  SimulationParams, SystemResult, WithDuplicates, max_profiles,
+  max_saved_simulations,
+}
 import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/option.{type Option}
-import plinth/javascript/storage as plinth_storage
-import varasto
-import army_simulator/army_model.{
-  type AggregatedResult, type ComparisonResult, type DropSystem, type FinalStats,
-  type InitialSetsSnapshot, type Profile, type SavedSimulation, type SimulationParams,
-  type SystemResult, AggregatedResult, ComparisonResult, FinalStats,
-  InitialSetsSnapshot, NoDuplicates, Profile, SavedSimulation, SimulationParams,
-  SystemResult, WithDuplicates, max_saved_simulations, max_profiles,
-}
 import items_calculator/game_data.{type Faction, Dark, Light}
+import plinth/javascript/storage as plinth_storage
 import sets_calculator/sets_inventory.{
-  type Inventory, type OwnedSlots, type OwnedCounts,
-  OwnedSlots, OwnedCounts, from_counts_list, from_slots_list, counts_to_list,
+  type Inventory, type OwnedCounts, type OwnedSlots, OwnedCounts, OwnedSlots,
+  counts_to_list, from_counts_list, from_slots_list,
 }
+import varasto
 
 const storage_key = "wl_army_simulations"
 
@@ -79,7 +80,10 @@ fn aggregated_result_decoder() -> decode.Decoder(AggregatedResult) {
 
 fn system_result_decoder() -> decode.Decoder(SystemResult) {
   use system <- decode.field("system", drop_system_decoder())
-  use curve <- decode.field("progress_curve", decode.list(aggregated_result_decoder()))
+  use curve <- decode.field(
+    "progress_curve",
+    decode.list(aggregated_result_decoder()),
+  )
   use stats <- decode.field("final_stats", final_stats_decoder())
   decode.success(SystemResult(system, curve, stats))
 }
@@ -98,7 +102,15 @@ fn saved_simulation_decoder() -> decode.Decoder(SavedSimulation) {
   use initial_sets <- decode.field("initial_sets", initial_sets_decoder())
   use result <- decode.field("result", comparison_result_decoder())
   use created_at <- decode.field("created_at", decode.int)
-  decode.success(SavedSimulation(id, name, params, faction, initial_sets, result, created_at))
+  decode.success(SavedSimulation(
+    id,
+    name,
+    params,
+    faction,
+    initial_sets,
+    result,
+    created_at,
+  ))
 }
 
 fn simulations_list_decoder() -> decode.Decoder(List(SavedSimulation)) {
@@ -196,7 +208,11 @@ pub fn load() -> List(SavedSimulation) {
     Error(_) -> []
     Ok(raw_storage) -> {
       let storage =
-        varasto.new(raw_storage, simulations_list_decoder(), simulations_list_encoder)
+        varasto.new(
+          raw_storage,
+          simulations_list_decoder(),
+          simulations_list_encoder,
+        )
       case varasto.get(storage, storage_key) {
         Ok(sims) -> sims
         Error(_) -> []
@@ -211,7 +227,11 @@ pub fn save(simulations: List(SavedSimulation)) -> Nil {
     Error(_) -> Nil
     Ok(raw_storage) -> {
       let storage =
-        varasto.new(raw_storage, simulations_list_decoder(), simulations_list_encoder)
+        varasto.new(
+          raw_storage,
+          simulations_list_decoder(),
+          simulations_list_encoder,
+        )
       let _ = varasto.set(storage, storage_key, simulations)
       Nil
     }
@@ -284,8 +304,16 @@ fn count_entry_decoder() -> decode.Decoder(#(String, OwnedCounts)) {
 /// Декодер для Inventory (поддержка нового формата с counts и миграция старого со slots)
 fn inventory_decoder() -> decode.Decoder(Inventory) {
   // Пробуем декодировать counts (новый формат или старый со slots+counts)
-  use counts <- decode.optional_field("counts", [], decode.list(count_entry_decoder()))
-  use slots <- decode.optional_field("slots", [], decode.list(slot_entry_decoder()))
+  use counts <- decode.optional_field(
+    "counts",
+    [],
+    decode.list(count_entry_decoder()),
+  )
+  use slots <- decode.optional_field(
+    "slots",
+    [],
+    decode.list(slot_entry_decoder()),
+  )
 
   // Если есть counts - используем их
   case counts {
@@ -396,10 +424,7 @@ pub fn add_profile(
 }
 
 /// Удалить профиль по ID
-pub fn remove_profile(
-  profiles: List(Profile),
-  id: String,
-) -> List(Profile) {
+pub fn remove_profile(profiles: List(Profile), id: String) -> List(Profile) {
   list.filter(profiles, fn(p) { p.id != id })
 }
 

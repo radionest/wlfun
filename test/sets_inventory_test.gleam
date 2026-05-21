@@ -1,3 +1,4 @@
+import gleam/list
 import gleeunit/should
 import items_calculator/game_data.{Blue, Green}
 import sets_calculator/sets_game_data.{RegularUnit, SetId}
@@ -6,7 +7,6 @@ import sets_calculator/sets_inventory.{
   empty_slots, get_all_counts_list, get_counts, get_slots, key_to_set_id,
   set_id_to_key, set_slot_count, sync_slots_to_counts, toggle_slot,
 }
-import gleam/list
 
 // ============================================================================
 // Тесты empty_slots и empty_counts

@@ -1,10 +1,10 @@
-import gleeunit/should
 import bp_calculator/battle_pass.{
-  calculate_reachable_level, calculate_total_available_points,
-  get_level_cost, level_costs, max_level, points_needed, required_daily_points,
+  calculate_reachable_level, calculate_total_available_points, get_level_cost,
+  level_costs, max_level, points_needed, required_daily_points,
   total_points_to_level, weekly_reward,
 }
 import gleam/list
+import gleeunit/should
 
 // ============================================================================
 // Тесты level_costs

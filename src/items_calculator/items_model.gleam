@@ -1,6 +1,8 @@
 import gleam/option.{type Option, None, Some}
-import items_calculator/game_data.{type ItemColor, type Unit, type Faction, Green, Light}
 import items_calculator/calculator_logic.{type CalculationResult}
+import items_calculator/game_data.{
+  type Faction, type ItemColor, type Unit, Green, Light,
+}
 import items_calculator/items_storage as storage
 
 /// Модель состояния приложения
@@ -22,10 +24,11 @@ pub fn init() -> Model {
       let faction = game_data.string_to_faction(saved.faction)
       let color = game_data.string_to_color(saved.color)
       let unit = case saved.unit_name {
-        Some(name) -> case game_data.find_unit(name) {
-          Ok(u) -> Some(u)
-          Error(_) -> None
-        }
+        Some(name) ->
+          case game_data.find_unit(name) {
+            Ok(u) -> Some(u)
+            Error(_) -> None
+          }
         None -> None
       }
       // Вычисляем результат если есть юнит
@@ -48,14 +51,15 @@ pub fn init() -> Model {
         result: result,
       )
     }
-    None -> Model(
-      selected_faction: Light,
-      selected_unit: None,
-      selected_color: Green,
-      current_level: 1,
-      target_level: 2,
-      result: None,
-    )
+    None ->
+      Model(
+        selected_faction: Light,
+        selected_unit: None,
+        selected_color: Green,
+        current_level: 1,
+        target_level: 2,
+        result: None,
+      )
   }
 }
 

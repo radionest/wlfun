@@ -1,9 +1,9 @@
-import gleam/option.{type Option, None}
 import gleam/list
-import plinth/browser/worker.{type Worker}
+import gleam/option.{type Option, None}
 import items_calculator/game_data.{type Faction, type ItemColor, Light}
-import sets_calculator/sets_inventory.{type Inventory}
+import plinth/browser/worker.{type Worker}
 import sets_calculator/sets_game_data.{type SetId}
+import sets_calculator/sets_inventory.{type Inventory}
 
 /// Параметры симуляции
 pub type SimulationParams {
@@ -102,12 +102,7 @@ pub type SavedSimulation {
 
 /// Профиль инвентаря
 pub type Profile {
-  Profile(
-    id: String,
-    name: String,
-    inventory: Inventory,
-    created_at: Int,
-  )
+  Profile(id: String, name: String, inventory: Inventory, created_at: Int)
 }
 
 /// Максимальное количество профилей
