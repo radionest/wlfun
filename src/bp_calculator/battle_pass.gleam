@@ -115,12 +115,18 @@ pub fn calculate_reachable_level(
 
 fn calculate_level_recursive(level: Int, remaining_points: Int) -> LevelResult {
   case level >= max_level {
-    True -> LevelResult(level: max_level, progress: remaining_points, level_cost: 0)
+    True ->
+      LevelResult(level: max_level, progress: remaining_points, level_cost: 0)
     False -> {
       let cost = get_level_cost(level)
       case remaining_points >= cost {
         True -> calculate_level_recursive(level + 1, remaining_points - cost)
-        False -> LevelResult(level: level, progress: remaining_points, level_cost: cost)
+        False ->
+          LevelResult(
+            level: level,
+            progress: remaining_points,
+            level_cost: cost,
+          )
       }
     }
   }

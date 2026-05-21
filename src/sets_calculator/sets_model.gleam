@@ -1,12 +1,11 @@
+import army_simulator/army_model.{type Profile}
 import gleam/option.{type Option, None, Some}
-import plinth/browser/worker.{type Worker}
 import items_calculator/game_data.{type Faction, type ItemColor, Blue, Light}
+import plinth/browser/worker.{type Worker}
 import sets_calculator/sets_game_data.{type EntityType, type SetId, RegularUnit}
 import sets_calculator/sets_inventory.{
-  type Inventory, type OwnedSlots, type OwnedCounts,
-  empty_slots, empty_counts,
+  type Inventory, type OwnedCounts, type OwnedSlots, empty_counts, empty_slots,
 }
-import army_simulator/army_model.{type Profile}
 
 /// Тип цели для расчета (устаревший, оставлен для совместимости)
 pub type GoalType {
@@ -71,7 +70,6 @@ pub type Model {
     owned_counts: OwnedCounts,
     /// Максимум попыток для графика
     max_attempts: Int,
-
     // === Новые поля для панели целей ===
     /// Активные цели с результатами расчёта
     active_goals: List(ActiveGoal),

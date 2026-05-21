@@ -1,16 +1,20 @@
+import app_model.{
+  type AppModel, type AppMsg, ArmyMsg, ArmySimulatorRoute, BattlePassRoute,
+  BpMsg, ItemsGradeRoute, ItemsMsg, NavigateTo, SetsCalculatorRoute, SetsMsg,
+  ToggleTheme,
+}
+import army_simulator/army_model.{ToggleProfilesPanel}
+import army_simulator/army_view
+import bp_calculator/bp_view
 import gleam/int
 import gleam/list
-import lustre/element.{type Element, text}
-import lustre/element/html.{div, nav, button, a}
-import lustre/attribute.{class}
-import lustre/event.{on_click}
-import app_model.{type AppModel, type AppMsg, BattlePassRoute, ItemsGradeRoute, SetsCalculatorRoute, ArmySimulatorRoute, NavigateTo, ToggleTheme, BpMsg, ItemsMsg, SetsMsg, ArmyMsg}
-import bp_calculator/bp_view
 import items_calculator/items_view
+import lustre/attribute.{class}
+import lustre/element.{type Element, text}
+import lustre/element/html.{a, button, div, nav}
+import lustre/event.{on_click}
 import sets_calculator/sets_view
-import army_simulator/army_view
-import army_simulator/army_model.{ToggleProfilesPanel}
-import theme.{Light, Dark}
+import theme.{Dark, Light}
 
 pub fn view(model: AppModel) -> Element(AppMsg) {
   let theme_class = "app-container " <> theme.theme_class(model.theme)
@@ -36,7 +40,7 @@ pub fn view(model: AppModel) -> Element(AppMsg) {
         ArmySimulatorRoute ->
           // Маппинг сообщений Army симулятора
           element.map(army_view.view(model.army_model), ArmyMsg)
-      }
+      },
     ]),
   ])
 }
@@ -103,10 +107,12 @@ fn navigation(model: AppModel) -> Element(AppMsg) {
           class("theme-btn"),
           on_click(ToggleTheme),
         ],
-        [text(case model.theme {
-          Light -> "Тьма"
-          Dark -> "Свет"
-        })],
+        [
+          text(case model.theme {
+            Light -> "Тьма"
+            Dark -> "Свет"
+          }),
+        ],
       ),
     ]),
   ])

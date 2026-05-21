@@ -1,14 +1,17 @@
-import gleam/int
-import bp_calculator/bp_model.{type Model, type Msg, Model, CalculateLevel, CalculateDailyPoints}
 import bp_calculator/battle_pass
+import bp_calculator/bp_model.{
+  type Model, type Msg, CalculateDailyPoints, CalculateLevel, Model,
+}
 import bp_calculator/bp_storage as storage
+import gleam/int
 
 pub fn update(model: Model, msg: Msg) -> Model {
   let new_model = case msg {
     bp_model.SetMode(mode) -> Model(..model, mode: mode)
 
     bp_model.SetCurrentLevel(str) -> {
-      let level = parse_int_or(str, model.current_level, 1, battle_pass.max_level)
+      let level =
+        parse_int_or(str, model.current_level, 1, battle_pass.max_level)
       let max_progress = battle_pass.get_level_cost(level)
       let progress = int.min(model.current_progress, max_progress)
       Model(
@@ -42,7 +45,12 @@ pub fn update(model: Model, msg: Msg) -> Model {
 
     bp_model.SetTargetLevel(str) -> {
       let level =
-        parse_int_or(str, model.target_level, model.current_level, battle_pass.max_level)
+        parse_int_or(
+          str,
+          model.target_level,
+          model.current_level,
+          battle_pass.max_level,
+        )
       Model(..model, target_level: level, target_level_str: str)
     }
   }

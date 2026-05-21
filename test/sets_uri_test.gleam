@@ -1,10 +1,10 @@
+import gleam/list
+import gleam/string
 import gleeunit/should
 import items_calculator/game_data.{Blue, Green, Purple}
 import sets_calculator/sets_game_data.{RegularUnit, SetId}
 import sets_calculator/sets_inventory
 import sets_calculator/sets_uri.{decode_inventory, encode_inventory}
-import gleam/string
-import gleam/list
 
 // ============================================================================
 // Тесты encode_inventory

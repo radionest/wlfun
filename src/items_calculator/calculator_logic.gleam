@@ -25,8 +25,7 @@ pub fn calculate_level_cost(
     game_data.level_multipliers(target_level)
 
   let gold = float.round(int.to_float(base) *. color_mult *. gold_mult)
-  let dust =
-    float.round(int.to_float(base) /. 19.6 *. color_mult *. dust_mult)
+  let dust = float.round(int.to_float(base) /. 19.6 *. color_mult *. dust_mult)
 
   LevelCost(level: target_level, gold: gold, dust: dust)
 }
@@ -46,5 +45,9 @@ pub fn calculate_range(
   let total_gold = list.fold(levels, 0, fn(acc, lc) { acc + lc.gold })
   let total_dust = list.fold(levels, 0, fn(acc, lc) { acc + lc.dust })
 
-  CalculationResult(levels: levels, total_gold: total_gold, total_dust: total_dust)
+  CalculationResult(
+    levels: levels,
+    total_gold: total_gold,
+    total_dust: total_dust,
+  )
 }

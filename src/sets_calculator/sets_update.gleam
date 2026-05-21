@@ -1,47 +1,44 @@
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import items_calculator/game_data.{type ItemColor, Dark, Light}
 import lustre/effect.{type Effect}
-import items_calculator/game_data.{type ItemColor, Light, Dark}
 import sets_calculator/sets_model.{
-  type Model, type Msg, type TreeNodeId, type ActiveGoal, Model, ActiveGoal,
-  FactionNode, EntityNode,
-  GoalSpecificSet, GoalAnySetOnEntity, GoalAnySetOnFaction, GoalFirstSetOfColor,
-  GoalDuplicates,
-  SetGoalType, SelectFaction, SelectEntity, SelectEntityType, SelectColor,
-  SelectSetNumber, ToggleOwnedSlot, SetMaxAttempts, ResetOwnedSlots,
-  ToggleInventorySection, InventoryToggleSlot, InventorySetFilterFaction,
-  InventorySetFilterColor, InventorySetCount, SetMinDuplicates, SetMinItems,
-  ToggleBootstrapAutoUpdate, RunBootstrap, SetViewMode,
-  WorkerReady, ComputationResult, WorkerError,
-  CopyShareLink, ShareLinkCopied, ShareLinkError, HideShareNotification,
-  ToggleSettingsMenu, CloseSettingsMenu,
-  ToggleInventorySettingsMenu, CloseInventorySettingsMenu,
-  InventoryFillAll, InventoryClearAll, InventoryResetCounts,
-  ToggleInventoryStatsMenu, CloseInventoryStatsMenu,
-  // Новые сообщения для панели целей
-  ToggleSpecificSetGoal, ToggleAnyFactionGoal, ToggleDuplicatesGoal,
-  SetAnyFactionFaction, ToggleTreeNode, ToggleSetSelection,
-  SelectAllInNode, DeselectAllInNode,
-  // Боковая панель инвентаря
-  ToggleInventoryPanel,
-  // Профили
-  ToggleProfilesPanel, OpenProfileSaveDialog, CloseProfileSaveDialog,
-  SetProfileName, SaveCurrentProfile, LoadProfile, DeleteProfile, ProfilesLoaded,
+  type ActiveGoal, type Model, type Msg, type TreeNodeId, ActiveGoal,
+  CloseInventorySettingsMenu, CloseInventoryStatsMenu, CloseProfileSaveDialog,
+  CloseSettingsMenu, ComputationResult, CopyShareLink, DeleteProfile,
+  DeselectAllInNode, EntityNode, FactionNode, GoalAnySetOnEntity,
+  GoalAnySetOnFaction, GoalDuplicates, GoalFirstSetOfColor, GoalSpecificSet,
+  HideShareNotification, InventoryClearAll, InventoryFillAll,
+  InventoryResetCounts, InventorySetCount, InventorySetFilterColor,
+  InventorySetFilterFaction, InventoryToggleSlot, LoadProfile, Model,
+  OpenProfileSaveDialog, ProfilesLoaded, ResetOwnedSlots, RunBootstrap,
+  SaveCurrentProfile, SelectAllInNode, SelectColor, SelectEntity,
+  SelectEntityType, SelectFaction, SelectSetNumber, SetAnyFactionFaction,
+  SetGoalType, SetMaxAttempts, SetMinDuplicates, SetMinItems, SetProfileName,
+  SetViewMode, ShareLinkCopied, ShareLinkError, ToggleAnyFactionGoal,
+  ToggleBootstrapAutoUpdate, ToggleDuplicatesGoal, ToggleInventoryPanel,
+  ToggleInventorySection, ToggleInventorySettingsMenu, ToggleInventoryStatsMenu,
+  ToggleOwnedSlot, ToggleProfilesPanel, ToggleSetSelection, ToggleSettingsMenu,
+  ToggleSpecificSetGoal, ToggleTreeNode, WorkerError, WorkerReady,
   string_to_goal_type,
 }
+
+// Новые сообщения для панели целей
+// Боковая панель инвентаря
+// Профили
 import army_simulator/army_model.{Profile}
 import army_simulator/army_storage
-import sets_calculator/sets_chart
-import sets_calculator/sets_uri
 import plinth/browser/clipboard
-import sets_calculator/sets_inventory.{empty_slots, empty_counts}
+import sets_calculator/sets_chart
 import sets_calculator/sets_game_data.{
-  type EntityType, type SetId, SetId,
-  string_to_entity_type, generate_all_set_ids, filter_sets,
+  type EntityType, type SetId, SetId, filter_sets, generate_all_set_ids,
+  string_to_entity_type,
 }
+import sets_calculator/sets_inventory.{empty_counts, empty_slots}
 import sets_calculator/sets_probability
 import sets_calculator/sets_storage
+import sets_calculator/sets_uri
 
 // FFI для генерации ID и timestamp (используем те же что в army)
 @external(javascript, "../army_ffi.mjs", "generateSimulationId")
@@ -51,15 +48,29 @@ fn generate_id() -> String
 fn current_timestamp() -> Int
 
 /// Синхронизация инвентаря (вызывается из app_update)
-pub fn sync_inventory(model: Model, inventory: sets_inventory.Inventory) -> Model {
+pub fn sync_inventory(
+  model: Model,
+  inventory: sets_inventory.Inventory,
+) -> Model {
   // Обновляем инвентарь и синхронизируем owned_slots/counts для текущего выбранного сета
   case model.selected_entity {
     Some(name) -> {
       let entity_type = sets_game_data.detect_entity_type(name)
-      let set_id = SetId(name, entity_type, model.selected_color, model.selected_set_number)
+      let set_id =
+        SetId(
+          name,
+          entity_type,
+          model.selected_color,
+          model.selected_set_number,
+        )
       let slots = sets_inventory.get_slots(inventory, set_id)
       let counts = sets_inventory.get_counts(inventory, set_id)
-      Model(..model, inventory: inventory, owned_slots: slots, owned_counts: counts)
+      Model(
+        ..model,
+        inventory: inventory,
+        owned_slots: slots,
+        owned_counts: counts,
+      )
     }
     None -> Model(..model, inventory: inventory)
   }
@@ -89,7 +100,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
             owned_counts: empty_counts(),
           )
         GoalAnySetOnEntity ->
-          Model(..model, goal_type: goal, owned_slots: empty_slots(), owned_counts: empty_counts())
+          Model(
+            ..model,
+            goal_type: goal,
+            owned_slots: empty_slots(),
+            owned_counts: empty_counts(),
+          )
         GoalSpecificSet -> Model(..model, goal_type: goal)
         GoalDuplicates ->
           Model(
@@ -116,13 +132,30 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     SelectEntity(name) -> {
       case name {
-        "" -> Model(..model, selected_entity: None, owned_slots: empty_slots(), owned_counts: empty_counts())
+        "" ->
+          Model(
+            ..model,
+            selected_entity: None,
+            owned_slots: empty_slots(),
+            owned_counts: empty_counts(),
+          )
         _ -> {
           // Автоподстановка из инвентаря
-          let set_id = make_set_id(name, model.selected_entity_type, model.selected_color, model.selected_set_number)
+          let set_id =
+            make_set_id(
+              name,
+              model.selected_entity_type,
+              model.selected_color,
+              model.selected_set_number,
+            )
           let slots = sets_inventory.get_slots(model.inventory, set_id)
           let counts = sets_inventory.get_counts(model.inventory, set_id)
-          Model(..model, selected_entity: Some(name), owned_slots: slots, owned_counts: counts)
+          Model(
+            ..model,
+            selected_entity: Some(name),
+            owned_slots: slots,
+            owned_counts: counts,
+          )
         }
       }
     }
@@ -156,7 +189,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     ToggleOwnedSlot(slot) -> {
       // Переключаем слот через инвентарь (set_slots теперь работает через counts)
       let new_inventory = case make_current_set_id(model) {
-        Some(set_id) -> sets_inventory.toggle_slot(model.inventory, set_id, slot)
+        Some(set_id) ->
+          sets_inventory.toggle_slot(model.inventory, set_id, slot)
         None -> model.inventory
       }
       sets_storage.save(new_inventory)
@@ -166,7 +200,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         Some(set_id) -> {
           let new_slots = sets_inventory.get_slots(new_inventory, set_id)
           let new_counts = sets_inventory.get_counts(new_inventory, set_id)
-          Model(..model, owned_slots: new_slots, owned_counts: new_counts, inventory: new_inventory)
+          Model(
+            ..model,
+            owned_slots: new_slots,
+            owned_counts: new_counts,
+            inventory: new_inventory,
+          )
         }
         None -> Model(..model, inventory: new_inventory)
       }
@@ -184,12 +223,18 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     ResetOwnedSlots -> {
       // Очищаем слоты через инвентарь
       let new_inventory = case make_current_set_id(model) {
-        Some(set_id) -> sets_inventory.set_counts(model.inventory, set_id, empty_counts())
+        Some(set_id) ->
+          sets_inventory.set_counts(model.inventory, set_id, empty_counts())
         None -> model.inventory
       }
       sets_storage.save(new_inventory)
       sets_uri.set_url_hash(new_inventory)
-      Model(..model, owned_slots: empty_slots(), owned_counts: empty_counts(), inventory: new_inventory)
+      Model(
+        ..model,
+        owned_slots: empty_slots(),
+        owned_counts: empty_counts(),
+        inventory: new_inventory,
+      )
     }
 
     ToggleInventorySection -> {
@@ -197,7 +242,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     }
 
     InventoryToggleSlot(set_id, slot) -> {
-      let new_inventory = sets_inventory.toggle_slot(model.inventory, set_id, slot)
+      let new_inventory =
+        sets_inventory.toggle_slot(model.inventory, set_id, slot)
       sets_storage.save(new_inventory)
       sets_uri.set_url_hash(new_inventory)
       // Если это текущий выбранный сет - синхронизировать owned_slots и counts
@@ -205,7 +251,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         True -> {
           let new_slots = sets_inventory.get_slots(new_inventory, set_id)
           let new_counts = sets_inventory.get_counts(new_inventory, set_id)
-          Model(..model, inventory: new_inventory, owned_slots: new_slots, owned_counts: new_counts)
+          Model(
+            ..model,
+            inventory: new_inventory,
+            owned_slots: new_slots,
+            owned_counts: new_counts,
+          )
         }
         False -> Model(..model, inventory: new_inventory)
       }
@@ -222,7 +273,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     InventorySetCount(set_id, slot, value_str) -> {
       case int.parse(value_str) {
         Ok(n) if n >= 0 -> {
-          let new_inventory = sets_inventory.set_slot_count(model.inventory, set_id, slot, n)
+          let new_inventory =
+            sets_inventory.set_slot_count(model.inventory, set_id, slot, n)
           sets_storage.save(new_inventory)
           sets_uri.set_url_hash(new_inventory)
           // Если это текущий выбранный сет - синхронизировать owned_slots и counts
@@ -230,7 +282,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
             True -> {
               let new_slots = sets_inventory.get_slots(new_inventory, set_id)
               let new_counts = sets_inventory.get_counts(new_inventory, set_id)
-              Model(..model, inventory: new_inventory, owned_slots: new_slots, owned_counts: new_counts)
+              Model(
+                ..model,
+                inventory: new_inventory,
+                owned_slots: new_slots,
+                owned_counts: new_counts,
+              )
             }
             False -> Model(..model, inventory: new_inventory)
           }
@@ -263,17 +320,19 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     RunBootstrap -> {
       // Ручной запуск бутстрапа с учётом инвентаря
-      let initial_counts = sets_inventory.get_all_counts_list(
-        model.inventory,
-        model.selected_color,
-      )
-      let bootstrap = sets_probability.calculate_duplicates_bootstrap_with_inventory(
-        model.min_duplicates_per_item,
-        model.min_items_with_duplicates,
-        model.max_attempts,
-        10_000,
-        initial_counts,
-      )
+      let initial_counts =
+        sets_inventory.get_all_counts_list(
+          model.inventory,
+          model.selected_color,
+        )
+      let bootstrap =
+        sets_probability.calculate_duplicates_bootstrap_with_inventory(
+          model.min_duplicates_per_item,
+          model.min_items_with_duplicates,
+          model.max_attempts,
+          10_000,
+          initial_counts,
+        )
       Model(..model, bootstrap_curve: Some(bootstrap))
     }
 
@@ -339,7 +398,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     // Переключить меню настроек инвентаря
     ToggleInventorySettingsMenu -> {
-      Model(..model, inventory_settings_menu_open: !model.inventory_settings_menu_open)
+      Model(
+        ..model,
+        inventory_settings_menu_open: !model.inventory_settings_menu_open,
+      )
     }
 
     // Закрыть меню настроек инвентаря
@@ -350,7 +412,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     // Отметить все слоты в текущем фильтре
     InventoryFillAll -> {
       let all_sets = generate_all_set_ids()
-      let filtered = filter_sets(all_sets, model.inventory_filter_faction, model.inventory_filter_color)
+      let filtered =
+        filter_sets(
+          all_sets,
+          model.inventory_filter_faction,
+          model.inventory_filter_color,
+        )
       let new_inv = sets_inventory.fill_all_slots(model.inventory, filtered)
       sets_storage.save(new_inv)
       sets_uri.set_url_hash(new_inv)
@@ -360,7 +427,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     // Убрать все слоты в текущем фильтре
     InventoryClearAll -> {
       let all_sets = generate_all_set_ids()
-      let filtered = filter_sets(all_sets, model.inventory_filter_faction, model.inventory_filter_color)
+      let filtered =
+        filter_sets(
+          all_sets,
+          model.inventory_filter_faction,
+          model.inventory_filter_color,
+        )
       let new_inv = sets_inventory.clear_all_slots(model.inventory, filtered)
       sets_storage.save(new_inv)
       sets_uri.set_url_hash(new_inv)
@@ -370,7 +442,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     // Сбросить счётчики в текущем фильтре
     InventoryResetCounts -> {
       let all_sets = generate_all_set_ids()
-      let filtered = filter_sets(all_sets, model.inventory_filter_faction, model.inventory_filter_color)
+      let filtered =
+        filter_sets(
+          all_sets,
+          model.inventory_filter_faction,
+          model.inventory_filter_color,
+        )
       let new_inv = sets_inventory.reset_all_counts(model.inventory, filtered)
       sets_storage.save(new_inv)
       sets_uri.set_url_hash(new_inv)
@@ -379,7 +456,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     // Переключить меню статистики инвентаря
     ToggleInventoryStatsMenu -> {
-      Model(..model, inventory_stats_menu_open: !model.inventory_stats_menu_open)
+      Model(
+        ..model,
+        inventory_stats_menu_open: !model.inventory_stats_menu_open,
+      )
     }
 
     // Закрыть меню статистики инвентаря
@@ -388,7 +468,6 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     }
 
     // === Новые обработчики для панели целей ===
-
     // Переключить чекбокс "Конкретный сет"
     ToggleSpecificSetGoal -> {
       Model(..model, specific_set_enabled: !model.specific_set_enabled)
@@ -436,21 +515,23 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     // Выбрать все сеты в узле
     SelectAllInNode(node_id) -> {
       let sets_to_add = get_sets_for_node(model.selected_color, node_id)
-      let new_sets = list.fold(sets_to_add, model.selected_sets, fn(acc, s) {
-        case list.contains(acc, s) {
-          True -> acc
-          False -> [s, ..acc]
-        }
-      })
+      let new_sets =
+        list.fold(sets_to_add, model.selected_sets, fn(acc, s) {
+          case list.contains(acc, s) {
+            True -> acc
+            False -> [s, ..acc]
+          }
+        })
       Model(..model, selected_sets: new_sets)
     }
 
     // Отменить все сеты в узле
     DeselectAllInNode(node_id) -> {
       let sets_to_remove = get_sets_for_node(model.selected_color, node_id)
-      let new_sets = list.filter(model.selected_sets, fn(s) {
-        !list.contains(sets_to_remove, s)
-      })
+      let new_sets =
+        list.filter(model.selected_sets, fn(s) {
+          !list.contains(sets_to_remove, s)
+        })
       Model(..model, selected_sets: new_sets)
     }
 
@@ -465,8 +546,13 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     }
 
     OpenProfileSaveDialog -> {
-      let default_name = "Профиль " <> int.to_string(list.length(model.saved_profiles) + 1)
-      Model(..model, profile_save_dialog_open: True, pending_profile_name: default_name)
+      let default_name =
+        "Профиль " <> int.to_string(list.length(model.saved_profiles) + 1)
+      Model(
+        ..model,
+        profile_save_dialog_open: True,
+        pending_profile_name: default_name,
+      )
     }
 
     CloseProfileSaveDialog -> {
@@ -478,15 +564,21 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     }
 
     SaveCurrentProfile -> {
-      let new_profile = Profile(
-        id: generate_id(),
-        name: model.pending_profile_name,
-        inventory: model.inventory,
-        created_at: current_timestamp(),
-      )
-      let new_profiles = army_storage.add_profile(model.saved_profiles, new_profile)
+      let new_profile =
+        Profile(
+          id: generate_id(),
+          name: model.pending_profile_name,
+          inventory: model.inventory,
+          created_at: current_timestamp(),
+        )
+      let new_profiles =
+        army_storage.add_profile(model.saved_profiles, new_profile)
       army_storage.save_profiles(new_profiles)
-      Model(..model, saved_profiles: new_profiles, profile_save_dialog_open: False)
+      Model(
+        ..model,
+        saved_profiles: new_profiles,
+        profile_save_dialog_open: False,
+      )
     }
 
     LoadProfile(id) -> {
@@ -496,7 +588,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
           sets_storage.save(profile.inventory)
           sets_uri.set_url_hash(profile.inventory)
           // Синхронизируем owned_slots/counts для текущего сета
-          sync_inventory(Model(..model, inventory: profile.inventory), profile.inventory)
+          sync_inventory(
+            Model(..model, inventory: profile.inventory),
+            profile.inventory,
+          )
         }
         None -> model
       }
@@ -516,7 +611,8 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   // Определяем, нужен ли пересчёт для этого сообщения
   let needs_recalculate = case msg {
     WorkerReady(_) | ComputationResult(_, _) | WorkerError(_) -> False
-    CopyShareLink | ShareLinkCopied | ShareLinkError(_) | HideShareNotification -> False
+    CopyShareLink | ShareLinkCopied | ShareLinkError(_) | HideShareNotification ->
+      False
     ToggleSettingsMenu | CloseSettingsMenu -> False
     ToggleInventorySettingsMenu | CloseInventorySettingsMenu -> False
     ToggleInventoryStatsMenu | CloseInventoryStatsMenu -> False
@@ -525,8 +621,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     // Открытие/закрытие панели инвентаря не требует пересчёта
     ToggleInventoryPanel -> False
     // Профили не требуют пересчёта (кроме LoadProfile, который пересчитает через sync_inventory)
-    ToggleProfilesPanel | OpenProfileSaveDialog | CloseProfileSaveDialog -> False
-    SetProfileName(_) | SaveCurrentProfile | DeleteProfile(_) | ProfilesLoaded(_) -> False
+    ToggleProfilesPanel | OpenProfileSaveDialog | CloseProfileSaveDialog ->
+      False
+    SetProfileName(_)
+    | SaveCurrentProfile
+    | DeleteProfile(_)
+    | ProfilesLoaded(_) -> False
     _ -> True
   }
 
@@ -543,10 +643,11 @@ fn recalculate(model: Model) -> #(Model, Effect(Msg)) {
   // Также обновляем старое поле probability_curve для совместимости
   let curve = case model.goal_type {
     GoalDuplicates -> {
-      let initial_counts = sets_inventory.get_all_counts_list(
-        model.inventory,
-        model.selected_color,
-      )
+      let initial_counts =
+        sets_inventory.get_all_counts_list(
+          model.inventory,
+          model.selected_color,
+        )
       sets_probability.calculate_duplicates_curve_with_inventory(
         model.min_duplicates_per_item,
         model.min_items_with_duplicates,
@@ -557,7 +658,10 @@ fn recalculate(model: Model) -> #(Model, Effect(Msg)) {
     _ -> sets_probability.calculate_for_goal(model)
   }
 
-  #(Model(..model, active_goals: active_goals, probability_curve: Some(curve)), effect.none())
+  #(
+    Model(..model, active_goals: active_goals, probability_curve: Some(curve)),
+    effect.none(),
+  )
 }
 
 /// Построить список активных целей с рассчитанными кривыми
@@ -569,32 +673,38 @@ fn build_active_goals(model: Model) -> List(ActiveGoal) {
   let goals = []
 
   // 1. Выбранные сеты (если включено и выбраны сеты)
-  let #(goals, mut_index) = case model.specific_set_enabled && !list.is_empty(model.selected_sets) {
+  let #(goals, mut_index) = case
+    model.specific_set_enabled && !list.is_empty(model.selected_sets)
+  {
     True -> {
       let color = get_color_at(colors, mut_index)
       let count = list.length(model.selected_sets)
 
       // Формируем метку
       let label = case count {
-        1 -> case list.first(model.selected_sets) {
-          Ok(set_id) -> set_id.entity_name <> " Сет " <> int.to_string(set_id.set_number)
-          Error(_) -> "Выбранный сет"
-        }
+        1 ->
+          case list.first(model.selected_sets) {
+            Ok(set_id) ->
+              set_id.entity_name <> " Сет " <> int.to_string(set_id.set_number)
+            Error(_) -> "Выбранный сет"
+          }
         _ -> "Любой из " <> int.to_string(count) <> " сетов"
       }
 
-      let curve = sets_probability.calculate_any_of_sets_curve_with_inventory(
-        sets_game_data.pool_size(),
-        model.selected_sets,
-        model.inventory,
-        model.max_attempts,
-      )
+      let curve =
+        sets_probability.calculate_any_of_sets_curve_with_inventory(
+          sets_game_data.pool_size(),
+          model.selected_sets,
+          model.inventory,
+          model.max_attempts,
+        )
 
-      let goal = ActiveGoal(
-        label: label,
-        probability_curve: Some(curve),
-        chart_color: color,
-      )
+      let goal =
+        ActiveGoal(
+          label: label,
+          probability_curve: Some(curve),
+          chart_color: color,
+        )
       #([goal, ..goals], mut_index + 1)
     }
     False -> #(goals, mut_index)
@@ -610,18 +720,20 @@ fn build_active_goals(model: Model) -> List(ActiveGoal) {
       }
       let label = "Любой сет: " <> faction_name
 
-      let curve = sets_probability.calculate_any_faction_set_curve(
-        model.any_faction_faction,
-        model.selected_color,
-        model.max_attempts,
-        model.inventory,
-      )
+      let curve =
+        sets_probability.calculate_any_faction_set_curve(
+          model.any_faction_faction,
+          model.selected_color,
+          model.max_attempts,
+          model.inventory,
+        )
 
-      let goal = ActiveGoal(
-        label: label,
-        probability_curve: Some(curve),
-        chart_color: color,
-      )
+      let goal =
+        ActiveGoal(
+          label: label,
+          probability_curve: Some(curve),
+          chart_color: color,
+        )
       #([goal, ..goals], mut_index + 1)
     }
     False -> #(goals, mut_index)
@@ -631,25 +743,32 @@ fn build_active_goals(model: Model) -> List(ActiveGoal) {
   let #(goals, _) = case model.duplicates_enabled {
     True -> {
       let color = get_color_at(colors, mut_index)
-      let label = "Дубликаты " <> int.to_string(model.min_duplicates_per_item) <> "x" <> int.to_string(model.min_items_with_duplicates)
+      let label =
+        "Дубликаты "
+        <> int.to_string(model.min_duplicates_per_item)
+        <> "x"
+        <> int.to_string(model.min_items_with_duplicates)
 
-      let initial_counts = sets_inventory.get_all_counts_list(
-        model.inventory,
-        model.selected_color,
-      )
+      let initial_counts =
+        sets_inventory.get_all_counts_list(
+          model.inventory,
+          model.selected_color,
+        )
 
-      let curve = sets_probability.calculate_duplicates_curve_with_inventory(
-        model.min_duplicates_per_item,
-        model.min_items_with_duplicates,
-        model.max_attempts,
-        initial_counts,
-      )
+      let curve =
+        sets_probability.calculate_duplicates_curve_with_inventory(
+          model.min_duplicates_per_item,
+          model.min_items_with_duplicates,
+          model.max_attempts,
+          initial_counts,
+        )
 
-      let goal = ActiveGoal(
-        label: label,
-        probability_curve: Some(curve),
-        chart_color: color,
-      )
+      let goal =
+        ActiveGoal(
+          label: label,
+          probability_curve: Some(curve),
+          chart_color: color,
+        )
       #([goal, ..goals], mut_index + 1)
     }
     False -> #(goals, mut_index)
@@ -665,12 +784,18 @@ fn get_color_at(colors: List(String), index: Int) -> String {
   let idx = index % len
   case list.drop(colors, idx) {
     [c, ..] -> c
-    [] -> "#6366f1"  // fallback
+    [] -> "#6366f1"
+    // fallback
   }
 }
 
 /// Создать SetId из параметров
-fn make_set_id(name: String, entity_type: EntityType, color: ItemColor, set_number: Int) -> SetId {
+fn make_set_id(
+  name: String,
+  entity_type: EntityType,
+  color: ItemColor,
+  set_number: Int,
+) -> SetId {
   SetId(
     entity_name: name,
     entity_type: entity_type,
@@ -682,7 +807,13 @@ fn make_set_id(name: String, entity_type: EntityType, color: ItemColor, set_numb
 /// Создать SetId для текущего выбранного сета
 fn make_current_set_id(model: Model) -> Option(SetId) {
   case model.selected_entity {
-    Some(name) -> Some(make_set_id(name, model.selected_entity_type, model.selected_color, model.selected_set_number))
+    Some(name) ->
+      Some(make_set_id(
+        name,
+        model.selected_entity_type,
+        model.selected_color,
+        model.selected_set_number,
+      ))
     None -> None
   }
 }
@@ -703,7 +834,8 @@ fn sync_from_inventory(model: Model) -> Model {
       let counts = sets_inventory.get_counts(model.inventory, set_id)
       Model(..model, owned_slots: slots, owned_counts: counts)
     }
-    None -> Model(..model, owned_slots: empty_slots(), owned_counts: empty_counts())
+    None ->
+      Model(..model, owned_slots: empty_slots(), owned_counts: empty_counts())
   }
 }
 
@@ -714,15 +846,16 @@ fn get_sets_for_node(color: ItemColor, node_id: TreeNodeId) -> List(SetId) {
     FactionNode(faction) -> {
       // Все сеты фракции с данной редкостью
       list.filter(all_sets, fn(s) {
-        s.color == color && sets_game_data.entity_belongs_to_faction(s.entity_name, faction)
+        s.color == color
+        && sets_game_data.entity_belongs_to_faction(s.entity_name, faction)
       })
     }
     EntityNode(_faction, name, entity_type) -> {
       // Сеты конкретного юнита/героя с данной редкостью
       list.filter(all_sets, fn(s) {
-        s.color == color &&
-        s.entity_name == name &&
-        s.entity_type == entity_type
+        s.color == color
+        && s.entity_name == name
+        && s.entity_type == entity_type
       })
     }
   }

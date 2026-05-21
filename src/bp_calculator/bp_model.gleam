@@ -1,7 +1,7 @@
-import gleam/int
-import gleam/option.{None, Some}
 import bp_calculator/battle_pass
 import bp_calculator/bp_storage as storage
+import gleam/int
+import gleam/option.{None, Some}
 
 /// Режим калькулятора
 pub type Mode {

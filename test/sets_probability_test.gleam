@@ -1,9 +1,9 @@
+import gleam/float
+import gleam/list
 import gleeunit/should
 import sets_calculator/sets_probability.{
   calculate_duplicates_curve, calculate_duplicates_curve_with_inventory,
 }
-import gleam/list
-import gleam/float
 
 // ============================================================================
 // Тесты calculate_duplicates_curve
@@ -75,7 +75,8 @@ pub fn curve_with_inventory_empty_same_as_without_test() {
   let empty_counts = list.repeat(0, pool_size)
 
   let curve_without = calculate_duplicates_curve(2, 1, 100)
-  let curve_with = calculate_duplicates_curve_with_inventory(2, 1, 100, empty_counts)
+  let curve_with =
+    calculate_duplicates_curve_with_inventory(2, 1, 100, empty_counts)
 
   // Сравниваем первые несколько точек
   let assert Ok(p1_without) = list.drop(curve_without, 50) |> list.first
@@ -100,8 +101,10 @@ pub fn curve_with_inventory_faster_with_existing_test() {
       }
     })
 
-  let curve_empty = calculate_duplicates_curve_with_inventory(2, 1, 300, empty_counts)
-  let curve_with_one = calculate_duplicates_curve_with_inventory(2, 1, 300, with_one)
+  let curve_empty =
+    calculate_duplicates_curve_with_inventory(2, 1, 300, empty_counts)
+  let curve_with_one =
+    calculate_duplicates_curve_with_inventory(2, 1, 300, with_one)
 
   // С существующей вещью вероятность должна быть выше (или равна)
   let assert Ok(p_empty) = list.drop(curve_empty, 100) |> list.first

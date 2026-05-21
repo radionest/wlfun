@@ -2,8 +2,8 @@ import gleam/dynamic/decode
 import gleam/json
 import plinth/javascript/storage as plinth_storage
 import sets_calculator/sets_inventory.{
-  type Inventory, type OwnedSlots, type OwnedCounts,
-  OwnedSlots, OwnedCounts, from_counts_list, from_slots_list, counts_to_list,
+  type Inventory, type OwnedCounts, type OwnedSlots, OwnedCounts, OwnedSlots,
+  counts_to_list, from_counts_list, from_slots_list,
 }
 import varasto
 
@@ -85,12 +85,16 @@ pub fn load() -> Inventory {
     Error(_) -> sets_inventory.empty()
     Ok(raw_storage) -> {
       // Пробуем загрузить counts (новый формат)
-      let counts_storage = varasto.new(raw_storage, count_entries_decoder(), count_entries_encoder)
+      let counts_storage =
+        varasto.new(raw_storage, count_entries_decoder(), count_entries_encoder)
       case varasto.get(counts_storage, counts_storage_key) {
         Ok(count_entries) -> from_counts_list(count_entries)
         Error(_) -> {
           // Пробуем загрузить legacy slots и мигрировать
-          let slots_storage = varasto.new(raw_storage, slot_entries_decoder(), fn(_) { json.null() })
+          let slots_storage =
+            varasto.new(raw_storage, slot_entries_decoder(), fn(_) {
+              json.null()
+            })
           case varasto.get(slots_storage, legacy_slots_key) {
             Ok(slot_entries) -> {
               // Миграция: конвертируем slots в counts
@@ -114,7 +118,8 @@ pub fn save(inventory: Inventory) -> Nil {
   case plinth_storage.local() {
     Error(_) -> Nil
     Ok(raw_storage) -> {
-      let counts_storage = varasto.new(raw_storage, count_entries_decoder(), count_entries_encoder)
+      let counts_storage =
+        varasto.new(raw_storage, count_entries_decoder(), count_entries_encoder)
       let count_entries = counts_to_list(inventory)
       let _ = varasto.set(counts_storage, counts_storage_key, count_entries)
       Nil

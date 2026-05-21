@@ -1,17 +1,21 @@
-import gleam/int
-import lustre/attribute.{class, id, type_, value, for}
-import lustre/element.{type Element, text}
-import lustre/element/html.{div, h1, label, input, span, p, button}
-import lustre/event
-import bp_calculator/bp_model.{type Model, type Msg, CalculateLevel, CalculateDailyPoints}
 import bp_calculator/battle_pass
+import bp_calculator/bp_model.{
+  type Model, type Msg, CalculateDailyPoints, CalculateLevel,
+}
+import gleam/int
+import lustre/attribute.{class, for, id, type_, value}
+import lustre/element.{type Element, text}
+import lustre/element/html.{button, div, h1, input, label, p, span}
+import lustre/event
 
 /// Главный view
 pub fn view(model: Model) -> Element(Msg) {
   div([class("bp-calculator")], [
     h1([class("title")], [text("Боевой пропуск")]),
     div([class("disclaimer")], [
-      text("Калькулятор для старой версии БП. Данные для новой версии будут доступны в начале февраля."),
+      text(
+        "Калькулятор для старой версии БП. Данные для новой версии будут доступны в начале февраля.",
+      ),
     ]),
     mode_selector(model),
     input_form(model),
@@ -38,7 +42,10 @@ fn mode_selector(model: Model) -> Element(Msg) {
         [text("Рассчитать уровень")],
       ),
       button(
-        [class(daily_class), event.on_click(bp_model.SetMode(CalculateDailyPoints))],
+        [
+          class(daily_class),
+          event.on_click(bp_model.SetMode(CalculateDailyPoints)),
+        ],
         [text("Рассчитать очки")],
       ),
     ]),

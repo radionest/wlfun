@@ -1,9 +1,11 @@
 import gleam/dynamic/decode
 import gleam/json
 import gleam/option.{type Option, None, Some}
+import items_calculator/game_data.{
+  type Faction, type ItemColor, Blue, Dark, Green, Light, Purple,
+}
 import plinth/javascript/storage as plinth_storage
 import varasto
-import items_calculator/game_data.{type Faction, type ItemColor, Light, Dark, Blue, Green, Purple}
 
 const storage_key = "wl_calculator_settings"
 
@@ -25,7 +27,13 @@ fn settings_decoder() -> decode.Decoder(SavedSettings) {
   use color <- decode.field("color", decode.string)
   use current_level <- decode.field("current_level", decode.int)
   use target_level <- decode.field("target_level", decode.int)
-  decode.success(SavedSettings(faction, unit_name, color, current_level, target_level))
+  decode.success(SavedSettings(
+    faction,
+    unit_name,
+    color,
+    current_level,
+    target_level,
+  ))
 }
 
 /// Энкодер для настроек
@@ -49,7 +57,8 @@ pub fn load() -> Option(SavedSettings) {
   case plinth_storage.local() {
     Error(_) -> None
     Ok(raw_storage) -> {
-      let storage = varasto.new(raw_storage, settings_decoder(), settings_encoder)
+      let storage =
+        varasto.new(raw_storage, settings_decoder(), settings_encoder)
       case varasto.get(storage, storage_key) {
         Ok(settings) -> Some(settings)
         Error(_) -> None
@@ -69,14 +78,16 @@ pub fn save(
   case plinth_storage.local() {
     Error(_) -> Nil
     Ok(raw_storage) -> {
-      let storage = varasto.new(raw_storage, settings_decoder(), settings_encoder)
-      let settings = SavedSettings(
-        faction: faction_to_string(faction),
-        unit_name: unit_name,
-        color: color_to_string(color),
-        current_level: current_level,
-        target_level: target_level,
-      )
+      let storage =
+        varasto.new(raw_storage, settings_decoder(), settings_encoder)
+      let settings =
+        SavedSettings(
+          faction: faction_to_string(faction),
+          unit_name: unit_name,
+          color: color_to_string(color),
+          current_level: current_level,
+          target_level: target_level,
+        )
       let _ = varasto.set(storage, storage_key, settings)
       Nil
     }

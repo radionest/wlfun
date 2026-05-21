@@ -1,6 +1,8 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import items_calculator/game_data.{type Faction, type ItemColor, type Unit, Light, Dark, Blue, Green, Purple}
+import items_calculator/game_data.{
+  type Faction, type ItemColor, type Unit, Blue, Dark, Green, Light, Purple,
+}
 
 /// Тип сущности: обычный юнит или герой
 pub type EntityType {
@@ -206,23 +208,25 @@ pub fn generate_all_set_ids() -> List(SetId) {
 
   // Все юниты
   let units = game_data.all_units()
-  let unit_sets = list.flat_map(units, fn(unit: Unit) {
-    list.flat_map(colors, fn(color) {
-      list.map(set_numbers, fn(num) {
-        SetId(unit.name, RegularUnit, color, num)
+  let unit_sets =
+    list.flat_map(units, fn(unit: Unit) {
+      list.flat_map(colors, fn(color) {
+        list.map(set_numbers, fn(num) {
+          SetId(unit.name, RegularUnit, color, num)
+        })
       })
     })
-  })
 
   // Все герои
   let heroes = all_heroes()
-  let hero_sets = list.flat_map(heroes, fn(hero: Hero) {
-    list.flat_map(colors, fn(color) {
-      list.map(set_numbers, fn(num) {
-        SetId(hero.name, HeroEntity, color, num)
+  let hero_sets =
+    list.flat_map(heroes, fn(hero: Hero) {
+      list.flat_map(colors, fn(color) {
+        list.map(set_numbers, fn(num) {
+          SetId(hero.name, HeroEntity, color, num)
+        })
       })
     })
-  })
 
   list.append(unit_sets, hero_sets)
 }

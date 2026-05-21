@@ -1,11 +1,11 @@
-import gleam/int
 import gleam/float
+import gleam/int
 import gleam/list
-import gleam/string
 import gleam/option.{type Option, None, Some}
-import lustre/element.{type Element}
-import lustre/element/svg.{svg, line, polyline, text as svg_text, rect, g}
+import gleam/string
 import lustre/attribute.{attribute, class}
+import lustre/element.{type Element}
+import lustre/element/svg.{g, line, polyline, rect, svg, text as svg_text}
 
 /// Отрисовка SVG графика вероятности
 pub fn render_chart(
@@ -35,7 +35,10 @@ pub fn render_chart(
 
   svg(
     [
-      attribute("viewBox", "0 0 " <> int.to_string(width) <> " " <> int.to_string(height)),
+      attribute(
+        "viewBox",
+        "0 0 " <> int.to_string(width) <> " " <> int.to_string(height),
+      ),
       attribute("preserveAspectRatio", "xMidYMid meet"),
       class("probability-chart"),
     ],
@@ -72,46 +75,57 @@ pub fn render_chart(
 }
 
 /// Сетка графика
-fn render_grid(padding: Int, chart_width: Int, chart_height: Int) -> Element(msg) {
+fn render_grid(
+  padding: Int,
+  chart_width: Int,
+  chart_height: Int,
+) -> Element(msg) {
   let p = int.to_string(padding)
   let right = int.to_string(padding + chart_width)
   let bottom = int.to_string(padding + chart_height)
 
   // Горизонтальные линии сетки (каждые 20%)
-  let h_lines = list.map([0.2, 0.4, 0.6, 0.8], fn(ratio) {
-    let y = padding + float_to_int(int.to_float(chart_height) *. { 1.0 -. ratio })
-    let y_str = int.to_string(y)
-    line([
-      attribute("x1", p),
-      attribute("y1", y_str),
-      attribute("x2", right),
-      attribute("y2", y_str),
-      attribute("stroke", "var(--border-color, #333)"),
-      attribute("stroke-opacity", "0.3"),
-      attribute("stroke-dasharray", "4 4"),
-    ])
-  })
+  let h_lines =
+    list.map([0.2, 0.4, 0.6, 0.8], fn(ratio) {
+      let y =
+        padding + float_to_int(int.to_float(chart_height) *. { 1.0 -. ratio })
+      let y_str = int.to_string(y)
+      line([
+        attribute("x1", p),
+        attribute("y1", y_str),
+        attribute("x2", right),
+        attribute("y2", y_str),
+        attribute("stroke", "var(--border-color, #333)"),
+        attribute("stroke-opacity", "0.3"),
+        attribute("stroke-dasharray", "4 4"),
+      ])
+    })
 
   // Вертикальные линии сетки (каждые 25%)
-  let v_lines = list.map([0.25, 0.5, 0.75], fn(ratio) {
-    let x = padding + float_to_int(int.to_float(chart_width) *. ratio)
-    let x_str = int.to_string(x)
-    line([
-      attribute("x1", x_str),
-      attribute("y1", p),
-      attribute("x2", x_str),
-      attribute("y2", bottom),
-      attribute("stroke", "var(--border-color, #333)"),
-      attribute("stroke-opacity", "0.3"),
-      attribute("stroke-dasharray", "4 4"),
-    ])
-  })
+  let v_lines =
+    list.map([0.25, 0.5, 0.75], fn(ratio) {
+      let x = padding + float_to_int(int.to_float(chart_width) *. ratio)
+      let x_str = int.to_string(x)
+      line([
+        attribute("x1", x_str),
+        attribute("y1", p),
+        attribute("x2", x_str),
+        attribute("y2", bottom),
+        attribute("stroke", "var(--border-color, #333)"),
+        attribute("stroke-opacity", "0.3"),
+        attribute("stroke-dasharray", "4 4"),
+      ])
+    })
 
   g([], list.append(h_lines, v_lines))
 }
 
 /// Оси X и Y
-fn render_axes(padding: Int, chart_width: Int, chart_height: Int) -> Element(msg) {
+fn render_axes(
+  padding: Int,
+  chart_width: Int,
+  chart_height: Int,
+) -> Element(msg) {
   let p = int.to_string(padding)
   let right = int.to_string(padding + chart_width)
   let bottom = int.to_string(padding + chart_height)
@@ -166,14 +180,24 @@ fn render_area(
   chart_height: Int,
   max_x: Int,
 ) -> Element(msg) {
-  let points_str = data_to_points(data, padding, chart_width, chart_height, max_x)
+  let points_str =
+    data_to_points(data, padding, chart_width, chart_height, max_x)
 
   // Добавляем точки для замыкания области
   let bottom_y = int.to_string(padding + chart_height)
   let start_x = int.to_string(padding)
   let end_x = int.to_string(padding + chart_width)
 
-  let area_points = points_str <> " " <> end_x <> "," <> bottom_y <> " " <> start_x <> "," <> bottom_y
+  let area_points =
+    points_str
+    <> " "
+    <> end_x
+    <> ","
+    <> bottom_y
+    <> " "
+    <> start_x
+    <> ","
+    <> bottom_y
 
   svg.polygon([
     attribute("points", area_points),
@@ -216,21 +240,22 @@ fn render_x_labels(
   let bottom_str = int.to_string(bottom)
 
   // Метки: 0, 25%, 50%, 75%, 100% от max_x
-  let labels = [0.0, 0.25, 0.5, 0.75, 1.0]
-  |> list.map(fn(ratio) {
-    let value = float_to_int(int.to_float(max_x) *. ratio)
-    let x = padding + float_to_int(int.to_float(chart_width) *. ratio)
-    svg_text(
-      [
-        attribute("x", int.to_string(x)),
-        attribute("y", bottom_str),
-        attribute("text-anchor", "middle"),
-        attribute("fill", "var(--text-secondary, #888)"),
-        attribute("font-size", "11"),
-      ],
-      int.to_string(value),
-    )
-  })
+  let labels =
+    [0.0, 0.25, 0.5, 0.75, 1.0]
+    |> list.map(fn(ratio) {
+      let value = float_to_int(int.to_float(max_x) *. ratio)
+      let x = padding + float_to_int(int.to_float(chart_width) *. ratio)
+      svg_text(
+        [
+          attribute("x", int.to_string(x)),
+          attribute("y", bottom_str),
+          attribute("text-anchor", "middle"),
+          attribute("fill", "var(--text-secondary, #888)"),
+          attribute("font-size", "11"),
+        ],
+        int.to_string(value),
+      )
+    })
 
   g([], labels)
 }
@@ -241,21 +266,23 @@ fn render_y_labels(padding: Int, chart_height: Int) -> Element(msg) {
   let x_str = int.to_string(x)
 
   // Метки: 0%, 20%, 40%, 60%, 80%, 100%
-  let labels = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-  |> list.map(fn(ratio) {
-    let y = padding + float_to_int(int.to_float(chart_height) *. { 1.0 -. ratio })
-    let label = int.to_string(float_to_int(ratio *. 100.0)) <> "%"
-    svg_text(
-      [
-        attribute("x", x_str),
-        attribute("y", int.to_string(y + 4)),
-        attribute("text-anchor", "end"),
-        attribute("fill", "var(--text-secondary, #888)"),
-        attribute("font-size", "10"),
-      ],
-      label,
-    )
-  })
+  let labels =
+    [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    |> list.map(fn(ratio) {
+      let y =
+        padding + float_to_int(int.to_float(chart_height) *. { 1.0 -. ratio })
+      let label = int.to_string(float_to_int(ratio *. 100.0)) <> "%"
+      svg_text(
+        [
+          attribute("x", x_str),
+          attribute("y", int.to_string(y + 4)),
+          attribute("text-anchor", "end"),
+          attribute("fill", "var(--text-secondary, #888)"),
+          attribute("font-size", "10"),
+        ],
+        label,
+      )
+    })
 
   g([], labels)
 }
@@ -282,7 +309,10 @@ fn render_axis_titles(width: Int, height: Int, padding: Int) -> Element(msg) {
         attribute("text-anchor", "middle"),
         attribute("fill", "var(--text-secondary, #888)"),
         attribute("font-size", "12"),
-        attribute("transform", "rotate(-90, 15, " <> int.to_string(padding + 60) <> ")"),
+        attribute(
+          "transform",
+          "rotate(-90, 15, " <> int.to_string(padding + 60) <> ")",
+        ),
       ],
       "Вероятность",
     ),
@@ -313,11 +343,13 @@ fn render_bootstrap_line(
   polyline([
     attribute("points", points),
     attribute("fill", "none"),
-    attribute("stroke", "#f97316"),  // оранжевый
+    attribute("stroke", "#f97316"),
+    // оранжевый
     attribute("stroke-width", "2"),
     attribute("stroke-linecap", "round"),
     attribute("stroke-linejoin", "round"),
-    attribute("stroke-dasharray", "6 3"),  // пунктир
+    attribute("stroke-dasharray", "6 3"),
+    // пунктир
   ])
 }
 
@@ -385,24 +417,28 @@ fn render_legend(padding: Int, chart_width: Int) -> Element(msg) {
 /// Цвета для разных кривых
 pub fn chart_colors() -> List(String) {
   [
-    "#6366f1",  // indigo (основной)
-    "#f97316",  // orange
-    "#22c55e",  // green
-    "#ef4444",  // red
-    "#8b5cf6",  // violet
-    "#06b6d4",  // cyan
-    "#ec4899",  // pink
-    "#eab308",  // yellow
+    "#6366f1",
+    // indigo (основной)
+    "#f97316",
+    // orange
+    "#22c55e",
+    // green
+    "#ef4444",
+    // red
+    "#8b5cf6",
+    // violet
+    "#06b6d4",
+    // cyan
+    "#ec4899",
+    // pink
+    "#eab308",
+    // yellow
   ]
 }
 
 /// Тип данных для одной кривой
 pub type ChartCurve {
-  ChartCurve(
-    label: String,
-    data: List(#(Int, Float)),
-    color: String,
-  )
+  ChartCurve(label: String, data: List(#(Int, Float)), color: String)
 }
 
 /// Отрисовка SVG графика с несколькими кривыми
@@ -416,7 +452,8 @@ pub fn render_multi_chart(
   let chart_height = height - padding - 30
 
   // Находим максимальное X по всем кривым
-  let max_x = curves
+  let max_x =
+    curves
     |> list.flat_map(fn(c) {
       case list.last(c.data) {
         Ok(#(x, _)) -> [x]
@@ -431,17 +468,35 @@ pub fn render_multi_chart(
     })
 
   // Отрисовка каждой кривой (заливка + линия)
-  let curve_elements = curves
+  let curve_elements =
+    curves
     |> list.flat_map(fn(curve) {
       [
-        render_area_colored(curve.data, padding, chart_width, chart_height, max_x, curve.color),
-        render_line_colored(curve.data, padding, chart_width, chart_height, max_x, curve.color),
+        render_area_colored(
+          curve.data,
+          padding,
+          chart_width,
+          chart_height,
+          max_x,
+          curve.color,
+        ),
+        render_line_colored(
+          curve.data,
+          padding,
+          chart_width,
+          chart_height,
+          max_x,
+          curve.color,
+        ),
       ]
     })
 
   svg(
     [
-      attribute("viewBox", "0 0 " <> int.to_string(width) <> " " <> int.to_string(height)),
+      attribute(
+        "viewBox",
+        "0 0 " <> int.to_string(width) <> " " <> int.to_string(height),
+      ),
       attribute("preserveAspectRatio", "xMidYMid meet"),
       class("probability-chart multi-chart"),
     ],
@@ -506,13 +561,23 @@ fn render_area_colored(
   max_x: Int,
   color: String,
 ) -> Element(msg) {
-  let points_str = data_to_points(data, padding, chart_width, chart_height, max_x)
+  let points_str =
+    data_to_points(data, padding, chart_width, chart_height, max_x)
 
   let bottom_y = int.to_string(padding + chart_height)
   let start_x = int.to_string(padding)
   let end_x = int.to_string(padding + chart_width)
 
-  let area_points = points_str <> " " <> end_x <> "," <> bottom_y <> " " <> start_x <> "," <> bottom_y
+  let area_points =
+    points_str
+    <> " "
+    <> end_x
+    <> ","
+    <> bottom_y
+    <> " "
+    <> start_x
+    <> ","
+    <> bottom_y
 
   svg.polygon([
     attribute("points", area_points),
@@ -522,7 +587,11 @@ fn render_area_colored(
 }
 
 /// Легенда для нескольких кривых
-fn render_multi_legend(curves: List(ChartCurve), padding: Int, chart_width: Int) -> Element(msg) {
+fn render_multi_legend(
+  curves: List(ChartCurve),
+  padding: Int,
+  chart_width: Int,
+) -> Element(msg) {
   let count = list.length(curves)
   case count {
     0 -> g([], [])
@@ -583,7 +652,10 @@ fn render_legend_items(
           truncated_label,
         ),
       ]
-      list.append(items, render_legend_items(rest, legend_x, legend_y, item_height, index + 1))
+      list.append(
+        items,
+        render_legend_items(rest, legend_x, legend_y, item_height, index + 1),
+      )
     }
   }
 }

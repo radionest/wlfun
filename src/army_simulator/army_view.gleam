@@ -1,40 +1,50 @@
-import gleam/int
-import gleam/float
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import lustre/element.{type Element, text}
-import lustre/element/html.{button, div, h1, h2, h3, input, label, option, p, select, span, table, tbody, td, th, thead, tr}
-import lustre/element/svg
-import lustre/attribute.{class, disabled, placeholder, selected, type_, value, checked, name}
-import lustre/event.{on_click, on_input, on_check}
 import army_simulator/army_model.{
-  type AggregatedResult, type ColorCurveResult,
-  type ComparisonResult, type DropSystem, type EquipmentCurveResult,
-  type EquipmentMilestone, type FinalStats,
-  type Model, type Msg, type Profile, type SavedSimulation, type SystemResult,
-  ChartMode, CloseInventorySettingsMenu, CloseProfileSaveDialog, CloseSaveDialog,
-  CloseSettingsMenu, CloseInventoryStatsMenu, CopyShareLink,
-  DeleteProfile, DeleteSimulation, EquipmentCurveMode, HideShareNotification,
-  InventoryClearAll, InventoryFillAll,
+  type AggregatedResult, type ColorCurveResult, type ComparisonResult,
+  type DropSystem, type EquipmentCurveResult, type EquipmentMilestone,
+  type FinalStats, type Model, type Msg, type Profile, type SavedSimulation,
+  type SystemResult, ChartMode, CloseInventorySettingsMenu,
+  CloseInventoryStatsMenu, CloseProfileSaveDialog, CloseSaveDialog,
+  CloseSettingsMenu, CopyShareLink, DeleteProfile, DeleteSimulation,
+  EquipmentCurveMode, HideShareNotification, InventoryClearAll, InventoryFillAll,
   InventorySetFilterColor, InventorySetFilterFaction, InventoryToggleSlot,
-  LoadProfile, NoDuplicates,
-  OpenProfileSaveDialog, OpenSaveDialog, RunSimulation, SaveCurrentProfile,
-  SaveCurrentSimulation, SelectFaction, SetBaseSimulation, SetBluePerMonth,
-  SetChartDropSystem, SetGreenPerMonth, SetMonths, SetNumSimulations,
-  SetProfileName, SetPurplePerMonth, SetSimulationName, SetViewMode, TableMode,
-  ToggleComparisonPanel, ToggleInventoryPanel, ToggleInventorySettingsMenu,
-  ToggleInventoryStatsMenu, TogglePercentiles, ToggleProfilesPanel,
-  ToggleSettingsMenu, ToggleSimulationVisibility, WithDuplicates, max_profiles,
+  LoadProfile, NoDuplicates, OpenProfileSaveDialog, OpenSaveDialog,
+  RunSimulation, SaveCurrentProfile, SaveCurrentSimulation, SelectFaction,
+  SetBaseSimulation, SetBluePerMonth, SetChartDropSystem, SetGreenPerMonth,
+  SetMonths, SetNumSimulations, SetProfileName, SetPurplePerMonth,
+  SetSimulationName, SetViewMode, TableMode, ToggleComparisonPanel,
+  ToggleInventoryPanel, ToggleInventorySettingsMenu, ToggleInventoryStatsMenu,
+  TogglePercentiles, ToggleProfilesPanel, ToggleSettingsMenu,
+  ToggleSimulationVisibility, WithDuplicates, max_profiles,
   max_saved_simulations,
 }
 import army_simulator/army_storage
-import items_calculator/game_data.{type Faction, type ItemColor, Dark, Light, Blue, Green, Purple}
-import sets_calculator/sets_inventory
+import gleam/float
+import gleam/int
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import items_calculator/game_data.{
+  type Faction, type ItemColor, Blue, Dark, Green, Light, Purple,
+}
+import lustre/attribute.{
+  checked, class, disabled, name, placeholder, selected, type_, value,
+}
+import lustre/element.{type Element, text}
+import lustre/element/html.{
+  button, div, h1, h2, h3, input, label, option, p, select, span, table, tbody,
+  td, th, thead, tr,
+}
+import lustre/element/svg
+import lustre/event.{on_check, on_click, on_input}
 import sets_calculator/sets_game_data.{type SetId, SetId}
+import sets_calculator/sets_inventory
 import shared/inventory_view
 
 pub fn view(model: Model) -> Element(Msg) {
-  let wrapper_class = case model.inventory_panel_open, model.comparison_panel_open, model.profiles_panel_open {
+  let wrapper_class = case
+    model.inventory_panel_open,
+    model.comparison_panel_open,
+    model.profiles_panel_open
+  {
     True, _, _ -> "army-simulator-wrapper inventory-open"
     _, True, _ -> "army-simulator-wrapper comparison-open"
     _, _, True -> "army-simulator-wrapper profiles-open"
@@ -163,7 +173,9 @@ fn view_simulation_params(model: Model) -> Element(Msg) {
 /// Кнопка настроек симуляции с выпадающим меню
 fn view_settings_button(model: Model) -> Element(Msg) {
   div([class("simulation-settings-wrapper")], [
-    button([class("simulation-settings-btn"), on_click(ToggleSettingsMenu)], [text("⚙")]),
+    button([class("simulation-settings-btn"), on_click(ToggleSettingsMenu)], [
+      text("⚙"),
+    ]),
     case model.settings_menu_open {
       True -> view_settings_menu(model)
       False -> text("")
@@ -224,8 +236,10 @@ fn view_progress(progress: Float) -> Element(Msg) {
 fn view_placeholder() -> Element(Msg) {
   div([class("placeholder-section")], [
     p([class("placeholder-text")], [
-      text("Настройте параметры и запустите симуляцию для сравнения двух систем выпадения предметов"),
-    ])
+      text(
+        "Настройте параметры и запустите симуляцию для сравнения двух систем выпадения предметов",
+      ),
+    ]),
   ])
 }
 
@@ -291,7 +305,8 @@ fn render_svg_chart(
   let height = 520
   let padding = 60
   let chart_width = width - padding * 2
-  let chart_height = height - padding * 2 - 70  // 70px для легенды внизу
+  let chart_height = height - padding * 2 - 70
+  // 70px для легенды внизу
 
   let max_month = case list.last(curve_a) {
     Ok(r) -> r.month
@@ -306,20 +321,31 @@ fn render_svg_chart(
   }
 
   let y_scale = fn(val: Float) -> Int {
-    padding + chart_height - float.round(val /. max_y *. int.to_float(chart_height))
+    padding
+    + chart_height
+    - float.round(val /. max_y *. int.to_float(chart_height))
   }
 
   // 6 путей для линий
-  let path_a_blue = build_path_for_field(curve_a, x_scale, y_scale, fn(r) { r.mean_blue_sets })
-  let path_a_green = build_path_for_field(curve_a, x_scale, y_scale, fn(r) { r.mean_green_sets })
-  let path_a_purple = build_path_for_field(curve_a, x_scale, y_scale, fn(r) { r.mean_purple_sets })
-  let path_b_blue = build_path_for_field(curve_b, x_scale, y_scale, fn(r) { r.mean_blue_sets })
-  let path_b_green = build_path_for_field(curve_b, x_scale, y_scale, fn(r) { r.mean_green_sets })
-  let path_b_purple = build_path_for_field(curve_b, x_scale, y_scale, fn(r) { r.mean_purple_sets })
+  let path_a_blue =
+    build_path_for_field(curve_a, x_scale, y_scale, fn(r) { r.mean_blue_sets })
+  let path_a_green =
+    build_path_for_field(curve_a, x_scale, y_scale, fn(r) { r.mean_green_sets })
+  let path_a_purple =
+    build_path_for_field(curve_a, x_scale, y_scale, fn(r) { r.mean_purple_sets })
+  let path_b_blue =
+    build_path_for_field(curve_b, x_scale, y_scale, fn(r) { r.mean_blue_sets })
+  let path_b_green =
+    build_path_for_field(curve_b, x_scale, y_scale, fn(r) { r.mean_green_sets })
+  let path_b_purple =
+    build_path_for_field(curve_b, x_scale, y_scale, fn(r) { r.mean_purple_sets })
 
   svg.svg(
     [
-      attribute.attribute("viewBox", "0 0 " <> int.to_string(width) <> " " <> int.to_string(height)),
+      attribute.attribute(
+        "viewBox",
+        "0 0 " <> int.to_string(width) <> " " <> int.to_string(height),
+      ),
       class("comparison-chart"),
     ],
     [
@@ -389,7 +415,11 @@ fn build_path_for_field(
   |> list.fold("", fn(acc, s) { acc <> s })
 }
 
-fn render_grid_units(padding: Int, chart_width: Int, chart_height: Int) -> Element(Msg) {
+fn render_grid_units(
+  padding: Int,
+  chart_width: Int,
+  chart_height: Int,
+) -> Element(Msg) {
   // 6 горизонтальных линий: 0, 3, 6, 9, 12, 15, 18
   let h_lines =
     [0, 3, 6, 9, 12, 15, 18]
@@ -450,141 +480,143 @@ fn render_axes_units(
   svg.g([class("axes")], list.append(y_labels, x_labels))
 }
 
-fn render_legend_6_lines(width: Int, padding: Int, chart_height: Int) -> Element(Msg) {
+fn render_legend_6_lines(
+  width: Int,
+  padding: Int,
+  chart_height: Int,
+) -> Element(Msg) {
   // Легенда внизу по центру, в 2 строки
   let base_y = padding + chart_height + 25
   let center_x = width / 2
-  let item_width = 120  // ширина одного элемента легенды
+  let item_width = 120
+  // ширина одного элемента легенды
   let row_height = 22
 
-  svg.g(
-    [class("legend")],
-    [
-      // Первая строка: "С дубликатами" + 3 цвета
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x - item_width * 2)),
-          attribute.attribute("y", int.to_string(base_y)),
-          class("legend-header"),
-        ],
-        "С дубликатами:",
-      ),
-      // Синие - сплошная
-      svg.line([
-        attribute.attribute("x1", int.to_string(center_x - item_width)),
-        attribute.attribute("y1", int.to_string(base_y - 4)),
-        attribute.attribute("x2", int.to_string(center_x - item_width + 25)),
-        attribute.attribute("y2", int.to_string(base_y - 4)),
-        attribute.attribute("stroke", "#3b82f6"),
-        attribute.attribute("stroke-width", "3"),
-      ]),
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x - item_width + 30)),
-          attribute.attribute("y", int.to_string(base_y)),
-          class("legend-text"),
-        ],
-        "Синие",
-      ),
-      // Зелёные - сплошная
-      svg.line([
-        attribute.attribute("x1", int.to_string(center_x)),
-        attribute.attribute("y1", int.to_string(base_y - 4)),
-        attribute.attribute("x2", int.to_string(center_x + 25)),
-        attribute.attribute("y2", int.to_string(base_y - 4)),
-        attribute.attribute("stroke", "#22c55e"),
-        attribute.attribute("stroke-width", "3"),
-      ]),
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x + 30)),
-          attribute.attribute("y", int.to_string(base_y)),
-          class("legend-text"),
-        ],
-        "Зелёные",
-      ),
-      // Фиолетовые - сплошная
-      svg.line([
-        attribute.attribute("x1", int.to_string(center_x + item_width)),
-        attribute.attribute("y1", int.to_string(base_y - 4)),
-        attribute.attribute("x2", int.to_string(center_x + item_width + 25)),
-        attribute.attribute("y2", int.to_string(base_y - 4)),
-        attribute.attribute("stroke", "#a855f7"),
-        attribute.attribute("stroke-width", "3"),
-      ]),
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x + item_width + 30)),
-          attribute.attribute("y", int.to_string(base_y)),
-          class("legend-text"),
-        ],
-        "Фиолетовые",
-      ),
-      // Вторая строка: "Без дубликатов" + 3 цвета (пунктир)
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x - item_width * 2)),
-          attribute.attribute("y", int.to_string(base_y + row_height)),
-          class("legend-header"),
-        ],
-        "Без дубликатов:",
-      ),
-      // Синие - пунктир
-      svg.line([
-        attribute.attribute("x1", int.to_string(center_x - item_width)),
-        attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("x2", int.to_string(center_x - item_width + 25)),
-        attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("stroke", "#3b82f6"),
-        attribute.attribute("stroke-width", "3"),
-        attribute.attribute("stroke-dasharray", "8,4"),
-      ]),
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x - item_width + 30)),
-          attribute.attribute("y", int.to_string(base_y + row_height)),
-          class("legend-text"),
-        ],
-        "Синие",
-      ),
-      // Зелёные - пунктир
-      svg.line([
-        attribute.attribute("x1", int.to_string(center_x)),
-        attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("x2", int.to_string(center_x + 25)),
-        attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("stroke", "#22c55e"),
-        attribute.attribute("stroke-width", "3"),
-        attribute.attribute("stroke-dasharray", "8,4"),
-      ]),
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x + 30)),
-          attribute.attribute("y", int.to_string(base_y + row_height)),
-          class("legend-text"),
-        ],
-        "Зелёные",
-      ),
-      // Фиолетовые - пунктир
-      svg.line([
-        attribute.attribute("x1", int.to_string(center_x + item_width)),
-        attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("x2", int.to_string(center_x + item_width + 25)),
-        attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("stroke", "#a855f7"),
-        attribute.attribute("stroke-width", "3"),
-        attribute.attribute("stroke-dasharray", "8,4"),
-      ]),
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x + item_width + 30)),
-          attribute.attribute("y", int.to_string(base_y + row_height)),
-          class("legend-text"),
-        ],
-        "Фиолетовые",
-      ),
-    ],
-  )
+  svg.g([class("legend")], [
+    // Первая строка: "С дубликатами" + 3 цвета
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(center_x - item_width * 2)),
+        attribute.attribute("y", int.to_string(base_y)),
+        class("legend-header"),
+      ],
+      "С дубликатами:",
+    ),
+    // Синие - сплошная
+    svg.line([
+      attribute.attribute("x1", int.to_string(center_x - item_width)),
+      attribute.attribute("y1", int.to_string(base_y - 4)),
+      attribute.attribute("x2", int.to_string(center_x - item_width + 25)),
+      attribute.attribute("y2", int.to_string(base_y - 4)),
+      attribute.attribute("stroke", "#3b82f6"),
+      attribute.attribute("stroke-width", "3"),
+    ]),
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(center_x - item_width + 30)),
+        attribute.attribute("y", int.to_string(base_y)),
+        class("legend-text"),
+      ],
+      "Синие",
+    ),
+    // Зелёные - сплошная
+    svg.line([
+      attribute.attribute("x1", int.to_string(center_x)),
+      attribute.attribute("y1", int.to_string(base_y - 4)),
+      attribute.attribute("x2", int.to_string(center_x + 25)),
+      attribute.attribute("y2", int.to_string(base_y - 4)),
+      attribute.attribute("stroke", "#22c55e"),
+      attribute.attribute("stroke-width", "3"),
+    ]),
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(center_x + 30)),
+        attribute.attribute("y", int.to_string(base_y)),
+        class("legend-text"),
+      ],
+      "Зелёные",
+    ),
+    // Фиолетовые - сплошная
+    svg.line([
+      attribute.attribute("x1", int.to_string(center_x + item_width)),
+      attribute.attribute("y1", int.to_string(base_y - 4)),
+      attribute.attribute("x2", int.to_string(center_x + item_width + 25)),
+      attribute.attribute("y2", int.to_string(base_y - 4)),
+      attribute.attribute("stroke", "#a855f7"),
+      attribute.attribute("stroke-width", "3"),
+    ]),
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(center_x + item_width + 30)),
+        attribute.attribute("y", int.to_string(base_y)),
+        class("legend-text"),
+      ],
+      "Фиолетовые",
+    ),
+    // Вторая строка: "Без дубликатов" + 3 цвета (пунктир)
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(center_x - item_width * 2)),
+        attribute.attribute("y", int.to_string(base_y + row_height)),
+        class("legend-header"),
+      ],
+      "Без дубликатов:",
+    ),
+    // Синие - пунктир
+    svg.line([
+      attribute.attribute("x1", int.to_string(center_x - item_width)),
+      attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
+      attribute.attribute("x2", int.to_string(center_x - item_width + 25)),
+      attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
+      attribute.attribute("stroke", "#3b82f6"),
+      attribute.attribute("stroke-width", "3"),
+      attribute.attribute("stroke-dasharray", "8,4"),
+    ]),
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(center_x - item_width + 30)),
+        attribute.attribute("y", int.to_string(base_y + row_height)),
+        class("legend-text"),
+      ],
+      "Синие",
+    ),
+    // Зелёные - пунктир
+    svg.line([
+      attribute.attribute("x1", int.to_string(center_x)),
+      attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
+      attribute.attribute("x2", int.to_string(center_x + 25)),
+      attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
+      attribute.attribute("stroke", "#22c55e"),
+      attribute.attribute("stroke-width", "3"),
+      attribute.attribute("stroke-dasharray", "8,4"),
+    ]),
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(center_x + 30)),
+        attribute.attribute("y", int.to_string(base_y + row_height)),
+        class("legend-text"),
+      ],
+      "Зелёные",
+    ),
+    // Фиолетовые - пунктир
+    svg.line([
+      attribute.attribute("x1", int.to_string(center_x + item_width)),
+      attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
+      attribute.attribute("x2", int.to_string(center_x + item_width + 25)),
+      attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
+      attribute.attribute("stroke", "#a855f7"),
+      attribute.attribute("stroke-width", "3"),
+      attribute.attribute("stroke-dasharray", "8,4"),
+    ]),
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(center_x + item_width + 30)),
+        attribute.attribute("y", int.to_string(base_y + row_height)),
+        class("legend-text"),
+      ],
+      "Фиолетовые",
+    ),
+  ])
 }
 
 fn view_comparison_table(result: ComparisonResult) -> Element(Msg) {
@@ -601,15 +633,35 @@ fn view_comparison_table(result: ComparisonResult) -> Element(Msg) {
       ]),
     ]),
     tbody([], [
-      view_stats_row("Ср. синих сетов", stats_a.avg_blue_sets, stats_b.avg_blue_sets),
-      view_stats_row("Ср. зелёных сетов", stats_a.avg_green_sets, stats_b.avg_green_sets),
-      view_stats_row("Ср. фиолетовых сетов", stats_a.avg_purple_sets, stats_b.avg_purple_sets),
-      view_stats_row("Ср. всего предметов", stats_a.avg_total_items, stats_b.avg_total_items),
+      view_stats_row(
+        "Ср. синих сетов",
+        stats_a.avg_blue_sets,
+        stats_b.avg_blue_sets,
+      ),
+      view_stats_row(
+        "Ср. зелёных сетов",
+        stats_a.avg_green_sets,
+        stats_b.avg_green_sets,
+      ),
+      view_stats_row(
+        "Ср. фиолетовых сетов",
+        stats_a.avg_purple_sets,
+        stats_b.avg_purple_sets,
+      ),
+      view_stats_row(
+        "Ср. всего предметов",
+        stats_a.avg_total_items,
+        stats_b.avg_total_items,
+      ),
     ]),
   ])
 }
 
-fn view_stats_row(label_text: String, val_a: Float, val_b: Float) -> Element(Msg) {
+fn view_stats_row(
+  label_text: String,
+  val_a: Float,
+  val_b: Float,
+) -> Element(Msg) {
   let diff = val_b -. val_a
   let diff_class = case diff >. 0.0 {
     True -> "positive"
@@ -634,33 +686,41 @@ fn view_stats_row(label_text: String, val_a: Float, val_b: Float) -> Element(Msg
 
 fn view_equipment_curve(model: Model) -> Element(Msg) {
   case model.equipment_curve_result {
-    None -> div([class("placeholder-section")], [
-      p([class("placeholder-text")], [text("Данные кривой экипировки недоступны")]),
-    ])
-    Some(eq) -> div([class("equipment-curve-section")], [
-      // Чекбокс перцентилей
-      div([class("percentile-toggle")], [
-        label([], [
-          input([
-            type_("checkbox"),
-            checked(model.show_percentiles),
-            on_check(fn(_) { TogglePercentiles }),
-          ]),
-          text(" Показать перцентили (p90, p95)"),
+    None ->
+      div([class("placeholder-section")], [
+        p([class("placeholder-text")], [
+          text("Данные кривой экипировки недоступны"),
         ]),
-      ]),
-      // SVG chart
-      render_equipment_curve_chart(eq, model.show_percentiles),
-    ])
+      ])
+    Some(eq) ->
+      div([class("equipment-curve-section")], [
+        // Чекбокс перцентилей
+        div([class("percentile-toggle")], [
+          label([], [
+            input([
+              type_("checkbox"),
+              checked(model.show_percentiles),
+              on_check(fn(_) { TogglePercentiles }),
+            ]),
+            text(" Показать перцентили (p90, p95)"),
+          ]),
+        ]),
+        // SVG chart
+        render_equipment_curve_chart(eq, model.show_percentiles),
+      ])
   }
 }
 
-fn render_equipment_curve_chart(eq: EquipmentCurveResult, show_percentiles: Bool) -> Element(Msg) {
+fn render_equipment_curve_chart(
+  eq: EquipmentCurveResult,
+  show_percentiles: Bool,
+) -> Element(Msg) {
   let width = 1100
   let height = 600
   let padding = 60
   let chart_width = width - padding * 2
-  let chart_height = height - padding * 2 - 90  // 90px для легенды
+  let chart_height = height - padding * 2 - 90
+  // 90px для легенды
 
   // Находим максимальное значение Y (сундуков) по обеим системам
   let max_chests = find_max_chests(eq, show_percentiles)
@@ -668,24 +728,46 @@ fn render_equipment_curve_chart(eq: EquipmentCurveResult, show_percentiles: Bool
   let max_y = round_up_nice(max_chests)
 
   // Use the average of initial equipped across colors as starting X
-  let initial_equipped = { eq.initial_equipped.blue_sets + eq.initial_equipped.green_sets + eq.initial_equipped.purple_sets } / 3
+  let initial_equipped =
+    {
+      eq.initial_equipped.blue_sets
+      + eq.initial_equipped.green_sets
+      + eq.initial_equipped.purple_sets
+    }
+    / 3
 
-  let x_scale = fn(units: Int) -> Int {
-    padding + units * chart_width / 18
-  }
+  let x_scale = fn(units: Int) -> Int { padding + units * chart_width / 18 }
 
   let y_scale = fn(val: Float) -> Int {
     case max_y >. 0.0 {
-      True -> padding + chart_height - float.round(val /. max_y *. int.to_float(chart_height))
+      True ->
+        padding
+        + chart_height
+        - float.round(val /. max_y *. int.to_float(chart_height))
       False -> padding + chart_height
     }
   }
 
-  let color = "#6366f1"  // indigo
+  let color = "#6366f1"
+  // indigo
 
   // Build paths for 2 systems
-  let sys_a_mean = build_eq_path(eq.system_a.milestones, initial_equipped, x_scale, y_scale, fn(m: EquipmentMilestone) { m.mean })
-  let sys_b_mean = build_eq_path(eq.system_b.milestones, initial_equipped, x_scale, y_scale, fn(m: EquipmentMilestone) { m.mean })
+  let sys_a_mean =
+    build_eq_path(
+      eq.system_a.milestones,
+      initial_equipped,
+      x_scale,
+      y_scale,
+      fn(m: EquipmentMilestone) { m.mean },
+    )
+  let sys_b_mean =
+    build_eq_path(
+      eq.system_b.milestones,
+      initial_equipped,
+      x_scale,
+      y_scale,
+      fn(m: EquipmentMilestone) { m.mean },
+    )
 
   let mean_paths = [
     // System A (solid) - mean
@@ -708,10 +790,38 @@ fn render_equipment_curve_chart(eq: EquipmentCurveResult, show_percentiles: Bool
   let percentile_paths = case show_percentiles {
     False -> []
     True -> {
-      let sys_a_p90 = build_eq_path(eq.system_a.milestones, initial_equipped, x_scale, y_scale, fn(m: EquipmentMilestone) { m.p90 })
-      let sys_b_p90 = build_eq_path(eq.system_b.milestones, initial_equipped, x_scale, y_scale, fn(m: EquipmentMilestone) { m.p90 })
-      let sys_a_p95 = build_eq_path(eq.system_a.milestones, initial_equipped, x_scale, y_scale, fn(m: EquipmentMilestone) { m.p95 })
-      let sys_b_p95 = build_eq_path(eq.system_b.milestones, initial_equipped, x_scale, y_scale, fn(m: EquipmentMilestone) { m.p95 })
+      let sys_a_p90 =
+        build_eq_path(
+          eq.system_a.milestones,
+          initial_equipped,
+          x_scale,
+          y_scale,
+          fn(m: EquipmentMilestone) { m.p90 },
+        )
+      let sys_b_p90 =
+        build_eq_path(
+          eq.system_b.milestones,
+          initial_equipped,
+          x_scale,
+          y_scale,
+          fn(m: EquipmentMilestone) { m.p90 },
+        )
+      let sys_a_p95 =
+        build_eq_path(
+          eq.system_a.milestones,
+          initial_equipped,
+          x_scale,
+          y_scale,
+          fn(m: EquipmentMilestone) { m.p95 },
+        )
+      let sys_b_p95 =
+        build_eq_path(
+          eq.system_b.milestones,
+          initial_equipped,
+          x_scale,
+          y_scale,
+          fn(m: EquipmentMilestone) { m.p95 },
+        )
       [
         // System A p90
         svg.path([
@@ -753,7 +863,10 @@ fn render_equipment_curve_chart(eq: EquipmentCurveResult, show_percentiles: Bool
 
   svg.svg(
     [
-      attribute.attribute("viewBox", "0 0 " <> int.to_string(width) <> " " <> int.to_string(height)),
+      attribute.attribute(
+        "viewBox",
+        "0 0 " <> int.to_string(width) <> " " <> int.to_string(height),
+      ),
       class("equipment-curve-chart"),
     ],
     list.flatten([
@@ -772,7 +885,10 @@ fn find_max_chests(eq: EquipmentCurveResult, show_percentiles: Bool) -> Float {
   float.max(max_a, max_b)
 }
 
-fn get_max_from_milestones(result: ColorCurveResult, show_percentiles: Bool) -> Float {
+fn get_max_from_milestones(
+  result: ColorCurveResult,
+  show_percentiles: Bool,
+) -> Float {
   list.fold(result.milestones, 0.0, fn(acc, m: EquipmentMilestone) {
     let val = case show_percentiles {
       True -> float.max(m.mean, float.max(m.p90, m.p95))
@@ -792,13 +908,15 @@ fn round_up_nice(val: Float) -> Float {
       let normalized = val /. base
       let nice = case normalized <=. 1.0 {
         True -> 1.0
-        False -> case normalized <=. 2.0 {
-          True -> 2.0
-          False -> case normalized <=. 5.0 {
-            True -> 5.0
-            False -> 10.0
+        False ->
+          case normalized <=. 2.0 {
+            True -> 2.0
+            False ->
+              case normalized <=. 5.0 {
+                True -> 5.0
+                False -> 10.0
+              }
           }
-        }
       }
       nice *. base
     }
@@ -820,7 +938,11 @@ fn build_eq_path(
   get_value: fn(EquipmentMilestone) -> Float,
 ) -> String {
   // Start point at (initial_equipped, 0)
-  let start = "M " <> int.to_string(x_scale(initial_equipped)) <> " " <> int.to_string(y_scale(0.0))
+  let start =
+    "M "
+    <> int.to_string(x_scale(initial_equipped))
+    <> " "
+    <> int.to_string(y_scale(0.0))
 
   milestones
   |> list.fold(start, fn(acc, m) {
@@ -830,7 +952,12 @@ fn build_eq_path(
   })
 }
 
-fn render_eq_grid(padding: Int, chart_width: Int, chart_height: Int, max_y: Float) -> Element(Msg) {
+fn render_eq_grid(
+  padding: Int,
+  chart_width: Int,
+  chart_height: Int,
+  max_y: Float,
+) -> Element(Msg) {
   // Vertical grid lines every 3 units (0, 3, 6, 9, 12, 15, 18)
   let v_lines =
     [0, 3, 6, 9, 12, 15, 18]
@@ -852,7 +979,10 @@ fn render_eq_grid(padding: Int, chart_width: Int, chart_height: Int, max_y: Floa
     [1, 2, 3, 4, 5]
     |> list.map(fn(i) {
       let val = int.to_float(i) *. y_step
-      let y = padding + chart_height - float.round(val /. max_y *. int.to_float(chart_height))
+      let y =
+        padding
+        + chart_height
+        - float.round(val /. max_y *. int.to_float(chart_height))
       svg.line([
         attribute.attribute("x1", int.to_string(padding)),
         attribute.attribute("y1", int.to_string(y)),
@@ -866,7 +996,12 @@ fn render_eq_grid(padding: Int, chart_width: Int, chart_height: Int, max_y: Floa
   svg.g([class("grid")], list.append(v_lines, h_lines))
 }
 
-fn render_eq_axes(padding: Int, chart_width: Int, chart_height: Int, max_y: Float) -> Element(Msg) {
+fn render_eq_axes(
+  padding: Int,
+  chart_width: Int,
+  chart_height: Int,
+  max_y: Float,
+) -> Element(Msg) {
   // X axis: 0, 3, 6, 9, 12, 15, 18
   let x_labels =
     [0, 3, 6, 9, 12, 15, 18]
@@ -884,15 +1019,16 @@ fn render_eq_axes(padding: Int, chart_width: Int, chart_height: Int, max_y: Floa
     })
 
   // X axis title
-  let x_title = svg.text(
-    [
-      attribute.attribute("x", int.to_string(padding + chart_width / 2)),
-      attribute.attribute("y", int.to_string(padding + chart_height + 40)),
-      attribute.attribute("text-anchor", "middle"),
-      class("axis-label"),
-    ],
-    "Юниты с полным сетом",
-  )
+  let x_title =
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(padding + chart_width / 2)),
+        attribute.attribute("y", int.to_string(padding + chart_height + 40)),
+        attribute.attribute("text-anchor", "middle"),
+        class("axis-label"),
+      ],
+      "Юниты с полным сетом",
+    )
 
   // Y axis labels
   let y_step = max_y /. 5.0
@@ -900,7 +1036,10 @@ fn render_eq_axes(padding: Int, chart_width: Int, chart_height: Int, max_y: Floa
     [0, 1, 2, 3, 4, 5]
     |> list.map(fn(i) {
       let val = int.to_float(i) *. y_step
-      let y = padding + chart_height - float.round(val /. max_y *. int.to_float(chart_height))
+      let y =
+        padding
+        + chart_height
+        - float.round(val /. max_y *. int.to_float(chart_height))
       svg.text(
         [
           attribute.attribute("x", int.to_string(padding - 10)),
@@ -913,21 +1052,33 @@ fn render_eq_axes(padding: Int, chart_width: Int, chart_height: Int, max_y: Floa
     })
 
   // Y axis title
-  let y_title = svg.text(
-    [
-      attribute.attribute("x", int.to_string(15)),
-      attribute.attribute("y", int.to_string(padding + chart_height / 2)),
-      attribute.attribute("text-anchor", "middle"),
-      attribute.attribute("transform", "rotate(-90, 15, " <> int.to_string(padding + chart_height / 2) <> ")"),
-      class("axis-label"),
-    ],
-    "Сундуки",
-  )
+  let y_title =
+    svg.text(
+      [
+        attribute.attribute("x", int.to_string(15)),
+        attribute.attribute("y", int.to_string(padding + chart_height / 2)),
+        attribute.attribute("text-anchor", "middle"),
+        attribute.attribute(
+          "transform",
+          "rotate(-90, 15, " <> int.to_string(padding + chart_height / 2) <> ")",
+        ),
+        class("axis-label"),
+      ],
+      "Сундуки",
+    )
 
-  svg.g([class("axes")], list.flatten([x_labels, [x_title], y_labels, [y_title]]))
+  svg.g(
+    [class("axes")],
+    list.flatten([x_labels, [x_title], y_labels, [y_title]]),
+  )
 }
 
-fn render_eq_legend(width: Int, padding: Int, chart_height: Int, show_percentiles: Bool) -> Element(Msg) {
+fn render_eq_legend(
+  width: Int,
+  padding: Int,
+  chart_height: Int,
+  show_percentiles: Bool,
+) -> Element(Msg) {
   let base_y = padding + chart_height + 50
   let center_x = width / 2
   let col_width = 140
@@ -935,102 +1086,104 @@ fn render_eq_legend(width: Int, padding: Int, chart_height: Int, show_percentile
   let color = "#6366f1"
 
   // Row 1: Systems (solid vs dashed)
-  let systems_row = svg.g([], [
-    // С дубликатами - сплошная
-    svg.line([
-      attribute.attribute("x1", int.to_string(center_x - col_width)),
-      attribute.attribute("y1", int.to_string(base_y - 4)),
-      attribute.attribute("x2", int.to_string(center_x - col_width + 25)),
-      attribute.attribute("y2", int.to_string(base_y - 4)),
-      attribute.attribute("stroke", color),
-      attribute.attribute("stroke-width", "3"),
-    ]),
-    svg.text(
-      [
-        attribute.attribute("x", int.to_string(center_x - col_width + 30)),
-        attribute.attribute("y", int.to_string(base_y)),
-        class("legend-text"),
-      ],
-      "С дубликатами",
-    ),
-    // Без дубликатов - пунктир
-    svg.line([
-      attribute.attribute("x1", int.to_string(center_x + 20)),
-      attribute.attribute("y1", int.to_string(base_y - 4)),
-      attribute.attribute("x2", int.to_string(center_x + 45)),
-      attribute.attribute("y2", int.to_string(base_y - 4)),
-      attribute.attribute("stroke", color),
-      attribute.attribute("stroke-width", "3"),
-      attribute.attribute("stroke-dasharray", "8,4"),
-    ]),
-    svg.text(
-      [
-        attribute.attribute("x", int.to_string(center_x + 50)),
-        attribute.attribute("y", int.to_string(base_y)),
-        class("legend-text"),
-      ],
-      "Без дубликатов",
-    ),
-  ])
-
-  // Row 2: Percentile line widths (only if percentiles shown)
-  let percentile_row = case show_percentiles {
-    False -> svg.g([], [])
-    True -> svg.g([], [
-      // Mean - thick
+  let systems_row =
+    svg.g([], [
+      // С дубликатами - сплошная
       svg.line([
-        attribute.attribute("x1", int.to_string(center_x - col_width - 30)),
-        attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("x2", int.to_string(center_x - col_width - 5)),
-        attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
+        attribute.attribute("x1", int.to_string(center_x - col_width)),
+        attribute.attribute("y1", int.to_string(base_y - 4)),
+        attribute.attribute("x2", int.to_string(center_x - col_width + 25)),
+        attribute.attribute("y2", int.to_string(base_y - 4)),
         attribute.attribute("stroke", color),
         attribute.attribute("stroke-width", "3"),
       ]),
       svg.text(
         [
-          attribute.attribute("x", int.to_string(center_x - col_width)),
-          attribute.attribute("y", int.to_string(base_y + row_height)),
+          attribute.attribute("x", int.to_string(center_x - col_width + 30)),
+          attribute.attribute("y", int.to_string(base_y)),
           class("legend-text"),
         ],
-        "Среднее",
+        "С дубликатами",
       ),
-      // p90 - medium
+      // Без дубликатов - пунктир
       svg.line([
-        attribute.attribute("x1", int.to_string(center_x - 20)),
-        attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("x2", int.to_string(center_x + 5)),
-        attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
+        attribute.attribute("x1", int.to_string(center_x + 20)),
+        attribute.attribute("y1", int.to_string(base_y - 4)),
+        attribute.attribute("x2", int.to_string(center_x + 45)),
+        attribute.attribute("y2", int.to_string(base_y - 4)),
         attribute.attribute("stroke", color),
-        attribute.attribute("stroke-width", "1.5"),
-        attribute.attribute("opacity", "0.6"),
+        attribute.attribute("stroke-width", "3"),
+        attribute.attribute("stroke-dasharray", "8,4"),
       ]),
       svg.text(
         [
-          attribute.attribute("x", int.to_string(center_x + 10)),
-          attribute.attribute("y", int.to_string(base_y + row_height)),
+          attribute.attribute("x", int.to_string(center_x + 50)),
+          attribute.attribute("y", int.to_string(base_y)),
           class("legend-text"),
         ],
-        "p90",
-      ),
-      // p95 - thin
-      svg.line([
-        attribute.attribute("x1", int.to_string(center_x + 60)),
-        attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("x2", int.to_string(center_x + 85)),
-        attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
-        attribute.attribute("stroke", color),
-        attribute.attribute("stroke-width", "1"),
-        attribute.attribute("opacity", "0.4"),
-      ]),
-      svg.text(
-        [
-          attribute.attribute("x", int.to_string(center_x + 90)),
-          attribute.attribute("y", int.to_string(base_y + row_height)),
-          class("legend-text"),
-        ],
-        "p95",
+        "Без дубликатов",
       ),
     ])
+
+  // Row 2: Percentile line widths (only if percentiles shown)
+  let percentile_row = case show_percentiles {
+    False -> svg.g([], [])
+    True ->
+      svg.g([], [
+        // Mean - thick
+        svg.line([
+          attribute.attribute("x1", int.to_string(center_x - col_width - 30)),
+          attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
+          attribute.attribute("x2", int.to_string(center_x - col_width - 5)),
+          attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
+          attribute.attribute("stroke", color),
+          attribute.attribute("stroke-width", "3"),
+        ]),
+        svg.text(
+          [
+            attribute.attribute("x", int.to_string(center_x - col_width)),
+            attribute.attribute("y", int.to_string(base_y + row_height)),
+            class("legend-text"),
+          ],
+          "Среднее",
+        ),
+        // p90 - medium
+        svg.line([
+          attribute.attribute("x1", int.to_string(center_x - 20)),
+          attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
+          attribute.attribute("x2", int.to_string(center_x + 5)),
+          attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
+          attribute.attribute("stroke", color),
+          attribute.attribute("stroke-width", "1.5"),
+          attribute.attribute("opacity", "0.6"),
+        ]),
+        svg.text(
+          [
+            attribute.attribute("x", int.to_string(center_x + 10)),
+            attribute.attribute("y", int.to_string(base_y + row_height)),
+            class("legend-text"),
+          ],
+          "p90",
+        ),
+        // p95 - thin
+        svg.line([
+          attribute.attribute("x1", int.to_string(center_x + 60)),
+          attribute.attribute("y1", int.to_string(base_y + row_height - 4)),
+          attribute.attribute("x2", int.to_string(center_x + 85)),
+          attribute.attribute("y2", int.to_string(base_y + row_height - 4)),
+          attribute.attribute("stroke", color),
+          attribute.attribute("stroke-width", "1"),
+          attribute.attribute("opacity", "0.4"),
+        ]),
+        svg.text(
+          [
+            attribute.attribute("x", int.to_string(center_x + 90)),
+            attribute.attribute("y", int.to_string(base_y + row_height)),
+            class("legend-text"),
+          ],
+          "p95",
+        ),
+      ])
   }
 
   svg.g([class("legend")], [systems_row, percentile_row])
@@ -1090,7 +1243,11 @@ fn view_inventory_panel_content(model: Model) -> Element(Msg) {
   div([class("inventory-panel-content")], [
     // Overlay для закрытия меню настроек
     case model.inventory_settings_menu_open {
-      True -> div([class("settings-overlay"), on_click(CloseInventorySettingsMenu)], [])
+      True ->
+        div(
+          [class("settings-overlay"), on_click(CloseInventorySettingsMenu)],
+          [],
+        )
       False -> text("")
     },
     // Кнопка "Поделиться"
@@ -1108,10 +1265,11 @@ fn view_inventory_panel_content(model: Model) -> Element(Msg) {
 
 fn view_share_notification(model: Model) -> Element(Msg) {
   case model.share_notification {
-    Some(msg) -> div([class("share-notification"), on_click(HideShareNotification)], [
-      text(msg),
-      span([class("close-btn")], [text(" ×")]),
-    ])
+    Some(msg) ->
+      div([class("share-notification"), on_click(HideShareNotification)], [
+        text(msg),
+        span([class("close-btn")], [text(" ×")]),
+      ])
     None -> text("")
   }
 }
@@ -1131,27 +1289,80 @@ fn view_inventory_filters(model: Model) -> Element(Msg) {
   div([class("inventory-filters")], [
     // Overlay для закрытия меню статистики
     case model.inventory_stats_menu_open {
-      True -> div([class("settings-overlay"), on_click(CloseInventoryStatsMenu)], [])
+      True ->
+        div([class("settings-overlay"), on_click(CloseInventoryStatsMenu)], [])
       False -> text("")
     },
     // Фильтр по фракции (селект) - с опцией "Все"
     div([class("filter-group")], [
       label([], [text("Фракция:")]),
-      select([class("filter-select"), on_input(fn(s) { InventorySetFilterFaction(inventory_view.parse_faction_filter(s)) })], [
-        option([value("all"), selected(model.inventory_filter_faction == None)], "Все"),
-        option([value("light"), selected(model.inventory_filter_faction == Some(Light))], "Свет"),
-        option([value("dark"), selected(model.inventory_filter_faction == Some(Dark))], "Тьма"),
-      ]),
+      select(
+        [
+          class("filter-select"),
+          on_input(fn(s) {
+            InventorySetFilterFaction(inventory_view.parse_faction_filter(s))
+          }),
+        ],
+        [
+          option(
+            [value("all"), selected(model.inventory_filter_faction == None)],
+            "Все",
+          ),
+          option(
+            [
+              value("light"),
+              selected(model.inventory_filter_faction == Some(Light)),
+            ],
+            "Свет",
+          ),
+          option(
+            [
+              value("dark"),
+              selected(model.inventory_filter_faction == Some(Dark)),
+            ],
+            "Тьма",
+          ),
+        ],
+      ),
     ]),
     // Фильтр по редкости
     div([class("filter-group")], [
       label([], [text("Редкость:")]),
-      select([class("filter-select"), on_input(fn(s) { InventorySetFilterColor(inventory_view.parse_color_filter(s)) })], [
-        option([value("all"), selected(model.inventory_filter_color == None)], "Все"),
-        option([value("blue"), selected(model.inventory_filter_color == Some(Blue))], "Синий"),
-        option([value("green"), selected(model.inventory_filter_color == Some(Green))], "Зелёный"),
-        option([value("purple"), selected(model.inventory_filter_color == Some(Purple))], "Фиолетовый"),
-      ]),
+      select(
+        [
+          class("filter-select"),
+          on_input(fn(s) {
+            InventorySetFilterColor(inventory_view.parse_color_filter(s))
+          }),
+        ],
+        [
+          option(
+            [value("all"), selected(model.inventory_filter_color == None)],
+            "Все",
+          ),
+          option(
+            [
+              value("blue"),
+              selected(model.inventory_filter_color == Some(Blue)),
+            ],
+            "Синий",
+          ),
+          option(
+            [
+              value("green"),
+              selected(model.inventory_filter_color == Some(Green)),
+            ],
+            "Зелёный",
+          ),
+          option(
+            [
+              value("purple"),
+              selected(model.inventory_filter_color == Some(Purple)),
+            ],
+            "Фиолетовый",
+          ),
+        ],
+      ),
     ]),
     // Статистика + настройки
     div([class("filter-group inventory-stats")], [
@@ -1164,19 +1375,30 @@ fn view_inventory_filters(model: Model) -> Element(Msg) {
 /// Кнопка настроек инвентаря с выпадающим меню
 fn view_inventory_settings_button(model: Model) -> Element(Msg) {
   div([class("inventory-settings-wrapper")], [
-    button([class("inventory-settings-btn"), on_click(ToggleInventorySettingsMenu)], [text("⚙")]),
+    button(
+      [class("inventory-settings-btn"), on_click(ToggleInventorySettingsMenu)],
+      [text("⚙")],
+    ),
     case model.inventory_settings_menu_open {
-      True -> div([class("chart-settings-menu")], [
-        button([class("settings-menu-btn"), on_click(InventoryFillAll)], [text("Добавить все")]),
-        button([class("settings-menu-btn"), on_click(InventoryClearAll)], [text("Убрать все")]),
-      ])
+      True ->
+        div([class("chart-settings-menu")], [
+          button([class("settings-menu-btn"), on_click(InventoryFillAll)], [
+            text("Добавить все"),
+          ]),
+          button([class("settings-menu-btn"), on_click(InventoryClearAll)], [
+            text("Убрать все"),
+          ]),
+        ])
       False -> text("")
     },
   ])
 }
 
 /// Кнопка статистики с выпадающим меню
-fn view_inventory_stats_button(model: Model, stats: sets_inventory.InventoryStats) -> Element(Msg) {
+fn view_inventory_stats_button(
+  model: Model,
+  stats: sets_inventory.InventoryStats,
+) -> Element(Msg) {
   div([class("inventory-stats-wrapper")], [
     button([class("inventory-stats-btn"), on_click(ToggleInventoryStatsMenu)], [
       span([class("help-icon")], [text("?")]),
@@ -1193,11 +1415,12 @@ fn view_inventory_table(model: Model) -> Element(Msg) {
   // Фильтруем по фильтру фракции и редкости
   // При None показываем все фракции
   let all_sets = sets_game_data.generate_all_set_ids()
-  let filtered_sets = sets_game_data.filter_sets(
-    all_sets,
-    model.inventory_filter_faction,
-    model.inventory_filter_color,
-  )
+  let filtered_sets =
+    sets_game_data.filter_sets(
+      all_sets,
+      model.inventory_filter_faction,
+      model.inventory_filter_color,
+    )
 
   div([class("inventory-table-container")], [
     // Заголовок
@@ -1209,8 +1432,9 @@ fn view_inventory_table(model: Model) -> Element(Msg) {
       div([class("col-progress")], [text("Прогр.")]),
     ]),
     // Строки данных
-    div([class("inventory-rows")],
-      list.map(filtered_sets, fn(set_id) { view_inventory_row(model, set_id) })
+    div(
+      [class("inventory-rows")],
+      list.map(filtered_sets, fn(set_id) { view_inventory_row(model, set_id) }),
     ),
   ])
 }
@@ -1229,7 +1453,9 @@ fn view_inventory_row(model: Model, set_id: SetId) -> Element(Msg) {
 
   div([class(row_class)], [
     div([class("col-entity")], [text(name)]),
-    div([class("col-color " <> inventory_view.color_class(color))], [text(inventory_view.color_short(color))]),
+    div([class("col-color " <> inventory_view.color_class(color))], [
+      text(inventory_view.color_short(color)),
+    ]),
     div([class("col-set")], [text(int.to_string(set_num))]),
     div([class("col-slots")], [
       view_slot_checkbox(set_id, 1, slots.slot1),
@@ -1243,14 +1469,17 @@ fn view_inventory_row(model: Model, set_id: SetId) -> Element(Msg) {
   ])
 }
 
-fn view_slot_checkbox(set_id: SetId, slot: Int, is_checked: Bool) -> Element(Msg) {
+fn view_slot_checkbox(
+  set_id: SetId,
+  slot: Int,
+  is_checked: Bool,
+) -> Element(Msg) {
   input([
     type_("checkbox"),
     checked(is_checked),
     on_check(fn(_) { InventoryToggleSlot(set_id, slot) }),
   ])
 }
-
 
 // ============================================================================
 // Сохранение и сравнение симуляций
@@ -1279,7 +1508,10 @@ fn view_save_section(model: Model) -> Element(Msg) {
         case sims_count > 0 {
           True ->
             button(
-              [class("btn btn-primary compare-toggle-btn"), on_click(ToggleComparisonPanel)],
+              [
+                class("btn btn-primary compare-toggle-btn"),
+                on_click(ToggleComparisonPanel),
+              ],
               [text("Сравнить (" <> int.to_string(sims_count) <> ")")],
             )
           False -> element.none()
@@ -1310,9 +1542,12 @@ fn view_save_dialog(model: Model) -> Element(Msg) {
             view_simulation_preview(model),
           ]),
           div([class("dialog-actions")], [
-            button([class("btn btn-secondary cancel-btn"), on_click(CloseSaveDialog)], [
-              text("Отмена"),
-            ]),
+            button(
+              [class("btn btn-secondary cancel-btn"), on_click(CloseSaveDialog)],
+              [
+                text("Отмена"),
+              ],
+            ),
             button([class("btn btn-primary"), on_click(SaveCurrentSimulation)], [
               text("Сохранить"),
             ]),
@@ -1326,7 +1561,8 @@ fn view_simulation_preview(model: Model) -> Element(Msg) {
   div([class("simulation-preview")], [
     p([], [
       text(
-        "Фракция: " <> case model.selected_faction {
+        "Фракция: "
+        <> case model.selected_faction {
           Light -> "Свет"
           Dark -> "Тьма"
         },
@@ -1429,11 +1665,16 @@ fn view_simulation_item(
 
 fn get_chart_color(index: Int) -> String {
   case index % 5 {
-    0 -> "#6366f1"  // indigo
-    1 -> "#f97316"  // orange
-    2 -> "#22c55e"  // green
-    3 -> "#ef4444"  // red
-    4 -> "#8b5cf6"  // violet
+    0 -> "#6366f1"
+    // indigo
+    1 -> "#f97316"
+    // orange
+    2 -> "#22c55e"
+    // green
+    3 -> "#ef4444"
+    // red
+    4 -> "#8b5cf6"
+    // violet
     _ -> "#6366f1"
   }
 }
@@ -1485,7 +1726,8 @@ fn view_multi_comparison_chart(model: Model) -> Element(Msg) {
       div([class("no-sims-message")], [
         text("Выберите симуляции для отображения"),
       ])
-    _ -> render_multi_sim_chart(visible_sims, model.comparison_state.chart_system)
+    _ ->
+      render_multi_sim_chart(visible_sims, model.comparison_state.chart_system)
   }
 }
 
@@ -1493,7 +1735,7 @@ fn get_visible_simulations(model: Model) -> List(#(SavedSimulation, Int)) {
   model.comparison_state.saved_simulations
   |> list.index_map(fn(sim, idx) { #(sim, idx) })
   |> list.filter(fn(pair) {
-    list.contains(model.comparison_state.visible_ids, pair.0.id)
+    list.contains(model.comparison_state.visible_ids, { pair.0 }.id)
   })
 }
 
@@ -1511,7 +1753,7 @@ fn render_multi_sim_chart(
   // Находим максимальный месяц
   let max_month =
     sims
-    |> list.map(fn(pair) { pair.0.params.months })
+    |> list.map(fn(pair) { { pair.0 }.params.months })
     |> list.fold(12, fn(acc, m) { int.max(acc, m) })
 
   let max_y = 18.0
@@ -1730,12 +1972,17 @@ fn view_multi_comparison_table(model: Model) -> Element(Msg) {
         text("Выберите базовую симуляцию для сравнения"),
       ])
     Some(base_id) -> {
-      case army_storage.find_by_id(model.comparison_state.saved_simulations, base_id) {
+      case
+        army_storage.find_by_id(
+          model.comparison_state.saved_simulations,
+          base_id,
+        )
+      {
         None -> element.none()
         Some(base_sim) -> {
           let visible = get_visible_simulations(model)
           let others =
-            list.filter(visible, fn(pair) { pair.0.id != base_id })
+            list.filter(visible, fn(pair) { { pair.0 }.id != base_id })
 
           div([class("multi-comparison-table-container")], [
             h3([], [text("Сравнение с базовой: " <> base_sim.name)]),
@@ -1760,10 +2007,12 @@ fn view_multi_table_header(
       list.flatten([
         [
           th([], [text("Параметр")]),
-          th([class("base-col")], [text(truncate_name(base.name, 10) <> " (база)")]),
+          th([class("base-col")], [
+            text(truncate_name(base.name, 10) <> " (база)"),
+          ]),
         ],
         list.map(others, fn(pair) {
-          th([], [text(truncate_name(pair.0.name, 10))])
+          th([], [text(truncate_name({ pair.0 }.name, 10))])
         }),
       ]),
     ),
@@ -1778,7 +2027,7 @@ fn view_multi_table_body(
   let system = model.comparison_state.chart_system
   let base_stats = get_system_stats(base.result, system)
   let other_stats =
-    list.map(others, fn(pair) { get_system_stats(pair.0.result, system) })
+    list.map(others, fn(pair) { get_system_stats({ pair.0 }.result, system) })
 
   tbody(
     [],
@@ -1795,49 +2044,49 @@ fn view_multi_table_body(
         view_param_row_int(
           "Месяцев",
           base.params.months,
-          list.map(others, fn(p) { p.0.params.months }),
+          list.map(others, fn(p) { { p.0 }.params.months }),
         ),
       ],
       [
         view_param_row_int(
           "Синих/мес",
           base.params.blue_per_month,
-          list.map(others, fn(p) { p.0.params.blue_per_month }),
+          list.map(others, fn(p) { { p.0 }.params.blue_per_month }),
         ),
       ],
       [
         view_param_row_int(
           "Зелёных/мес",
           base.params.green_per_month,
-          list.map(others, fn(p) { p.0.params.green_per_month }),
+          list.map(others, fn(p) { { p.0 }.params.green_per_month }),
         ),
       ],
       [
         view_param_row_int(
           "Фиол./мес",
           base.params.purple_per_month,
-          list.map(others, fn(p) { p.0.params.purple_per_month }),
+          list.map(others, fn(p) { { p.0 }.params.purple_per_month }),
         ),
       ],
       [
         view_param_row_int(
           "Сеты синие",
           base.initial_sets.blue_sets,
-          list.map(others, fn(p) { p.0.initial_sets.blue_sets }),
+          list.map(others, fn(p) { { p.0 }.initial_sets.blue_sets }),
         ),
       ],
       [
         view_param_row_int(
           "Сеты зелён.",
           base.initial_sets.green_sets,
-          list.map(others, fn(p) { p.0.initial_sets.green_sets }),
+          list.map(others, fn(p) { { p.0 }.initial_sets.green_sets }),
         ),
       ],
       [
         view_param_row_int(
           "Сеты фиол.",
           base.initial_sets.purple_sets,
-          list.map(others, fn(p) { p.0.initial_sets.purple_sets }),
+          list.map(others, fn(p) { { p.0 }.initial_sets.purple_sets }),
         ),
       ],
       // Секция "Результаты"
@@ -1845,7 +2094,8 @@ fn view_multi_table_body(
         tr([class("section-header")], [
           td([attribute.attribute("colspan", "10")], [
             text(
-              "Результаты (" <> case system {
+              "Результаты ("
+              <> case system {
                 WithDuplicates -> "с дубликатами"
                 NoDuplicates -> "без дубликатов"
               }
@@ -2001,8 +2251,12 @@ fn view_save_profile_section(model: Model) -> Element(Msg) {
       p([], [text("Текущий инвентарь:")]),
       span([class("stat-item")], [text("Всего: " <> int.to_string(stats.total))]),
       span([class("stat-item blue")], [text("С: " <> int.to_string(stats.blue))]),
-      span([class("stat-item green")], [text("З: " <> int.to_string(stats.green))]),
-      span([class("stat-item purple")], [text("Ф: " <> int.to_string(stats.purple))]),
+      span([class("stat-item green")], [
+        text("З: " <> int.to_string(stats.green)),
+      ]),
+      span([class("stat-item purple")], [
+        text("Ф: " <> int.to_string(stats.purple)),
+      ]),
     ]),
     button(
       [
@@ -2010,22 +2264,27 @@ fn view_save_profile_section(model: Model) -> Element(Msg) {
         on_click(OpenProfileSaveDialog),
         disabled(is_full),
       ],
-      [text(case is_full {
-        True -> "Лимит профилей (" <> int.to_string(max_profiles) <> ")"
-        False -> "Сохранить текущий"
-      })],
+      [
+        text(case is_full {
+          True -> "Лимит профилей (" <> int.to_string(max_profiles) <> ")"
+          False -> "Сохранить текущий"
+        }),
+      ],
     ),
   ])
 }
 
 fn view_profiles_list(model: Model) -> Element(Msg) {
   case list.length(model.saved_profiles) {
-    0 -> div([class("no-profiles-message")], [
-      text("Нет сохранённых профилей"),
-    ])
-    _ -> div([class("profiles-list")],
-      list.map(model.saved_profiles, view_profile_item)
-    )
+    0 ->
+      div([class("no-profiles-message")], [
+        text("Нет сохранённых профилей"),
+      ])
+    _ ->
+      div(
+        [class("profiles-list")],
+        list.map(model.saved_profiles, view_profile_item),
+      )
   }
 }
 
@@ -2036,19 +2295,30 @@ fn view_profile_item(profile: Profile) -> Element(Msg) {
     div([class("profile-info")], [
       span([class("profile-name")], [text(profile.name)]),
       div([class("profile-stats")], [
-        span([class("stat-item")], [text("Всего: " <> int.to_string(stats.total))]),
-        span([class("stat-item blue")], [text("С: " <> int.to_string(stats.blue))]),
-        span([class("stat-item green")], [text("З: " <> int.to_string(stats.green))]),
-        span([class("stat-item purple")], [text("Ф: " <> int.to_string(stats.purple))]),
+        span([class("stat-item")], [
+          text("Всего: " <> int.to_string(stats.total)),
+        ]),
+        span([class("stat-item blue")], [
+          text("С: " <> int.to_string(stats.blue)),
+        ]),
+        span([class("stat-item green")], [
+          text("З: " <> int.to_string(stats.green)),
+        ]),
+        span([class("stat-item purple")], [
+          text("Ф: " <> int.to_string(stats.purple)),
+        ]),
       ]),
     ]),
     div([class("profile-actions")], [
       button([class("load-profile-btn"), on_click(LoadProfile(profile.id))], [
         text("Загрузить"),
       ]),
-      button([class("delete-profile-btn"), on_click(DeleteProfile(profile.id))], [
-        text("x"),
-      ]),
+      button(
+        [class("delete-profile-btn"), on_click(DeleteProfile(profile.id))],
+        [
+          text("x"),
+        ],
+      ),
     ]),
   ])
 }
@@ -2076,14 +2346,24 @@ fn view_profile_save_dialog(model: Model) -> Element(Msg) {
               h3([], [text("Статистика инвентаря")]),
               p([], [text("Всего вещей: " <> int.to_string(stats.total))]),
               p([class("blue")], [text("Синих: " <> int.to_string(stats.blue))]),
-              p([class("green")], [text("Зелёных: " <> int.to_string(stats.green))]),
-              p([class("purple")], [text("Фиолетовых: " <> int.to_string(stats.purple))]),
+              p([class("green")], [
+                text("Зелёных: " <> int.to_string(stats.green)),
+              ]),
+              p([class("purple")], [
+                text("Фиолетовых: " <> int.to_string(stats.purple)),
+              ]),
             ]),
           ]),
           div([class("dialog-actions")], [
-            button([class("btn btn-secondary cancel-btn"), on_click(CloseProfileSaveDialog)], [
-              text("Отмена"),
-            ]),
+            button(
+              [
+                class("btn btn-secondary cancel-btn"),
+                on_click(CloseProfileSaveDialog),
+              ],
+              [
+                text("Отмена"),
+              ],
+            ),
             button([class("btn btn-primary"), on_click(SaveCurrentProfile)], [
               text("Сохранить"),
             ]),

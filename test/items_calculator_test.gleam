@@ -1,13 +1,13 @@
+import gleam/list
 import gleeunit/should
-import items_calculator/game_data.{
-  Blue, Dark, Green, Light, LevelMultipliers, Purple, Tier1, Tier2, Tier3, Tier4,
-  Tier5, Unit, all_units, color_multiplier, find_unit, level_multipliers,
-  string_to_color, string_to_faction, tier_base, units_by_faction,
-}
 import items_calculator/calculator_logic.{
   type LevelCost, calculate_level_cost, calculate_range,
 }
-import gleam/list
+import items_calculator/game_data.{
+  Blue, Dark, Green, LevelMultipliers, Light, Purple, Tier1, Tier2, Tier3, Tier4,
+  Tier5, Unit, all_units, color_multiplier, find_unit, level_multipliers,
+  string_to_color, string_to_faction, tier_base, units_by_faction,
+}
 
 // ============================================================================
 // Тесты color_multiplier

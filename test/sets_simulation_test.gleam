@@ -1,11 +1,11 @@
-import gleeunit/should
 import gleam/option.{None, Some}
-import items_calculator/game_data.{Green, Dark, Light}
+import gleeunit/should
+import items_calculator/game_data.{Dark, Green, Light}
+import sets_calculator/sets_inventory
 import sets_calculator/sets_model.{
   type Model, GoalAnySetOnEntity, GoalDuplicates, GoalSpecificSet, Model,
   SelectEntity, SelectFaction, SetGoalType, SetMinDuplicates, SetMinItems,
 }
-import sets_calculator/sets_inventory
 import sets_calculator/sets_update
 
 // ============================================================================
@@ -20,7 +20,8 @@ fn default_model() -> Model {
 
 pub fn sets_goal_change_to_duplicates_test() {
   let model = default_model()
-  let #(new_model, _effect) = sets_update.update(model, SetGoalType("duplicates"))
+  let #(new_model, _effect) =
+    sets_update.update(model, SetGoalType("duplicates"))
 
   new_model.goal_type |> should.equal(GoalDuplicates)
   // При смене на duplicates, entity и faction сбрасываются
@@ -81,7 +82,8 @@ pub fn sets_set_min_items_updates_test() {
 
 pub fn sets_goal_specific_preserves_slots_test() {
   let owned = sets_inventory.OwnedSlots(True, True, False, False)
-  let model = Model(..default_model(), goal_type: GoalAnySetOnEntity, owned_slots: owned)
+  let model =
+    Model(..default_model(), goal_type: GoalAnySetOnEntity, owned_slots: owned)
 
   // Смена на GoalSpecificSet должна сохранить slots
   let #(new_model, _effect) = sets_update.update(model, SetGoalType("specific"))

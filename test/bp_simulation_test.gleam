@@ -1,13 +1,13 @@
-import gleeunit/should
-import lustre/effect
-import lustre/dev/simulate
+import bp_calculator/battle_pass
 import bp_calculator/bp_model.{
   type Model, type Msg, CalculateDailyPoints, CalculateLevel, Model,
   SetCurrentLevel, SetDailyPoints, SetMode, SetTargetLevel,
 }
 import bp_calculator/bp_update
 import bp_calculator/bp_view
-import bp_calculator/battle_pass
+import gleeunit/should
+import lustre/dev/simulate
+import lustre/effect
 
 // ============================================================================
 // Simulation тесты для BP Calculator

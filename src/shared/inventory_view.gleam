@@ -1,12 +1,13 @@
 /// Общие функции для отображения инвентаря
 /// Используется в sets_view и army_view
-
 import gleam/int
 import gleam/option.{type Option, None, Some}
+import items_calculator/game_data.{
+  type Faction, type ItemColor, Blue, Dark, Green, Light, Purple,
+}
+import lustre/attribute.{class}
 import lustre/element.{type Element}
 import lustre/element/html.{div, span, text}
-import lustre/attribute.{class}
-import items_calculator/game_data.{type Faction, type ItemColor, Blue, Dark, Green, Light, Purple}
 import sets_calculator/sets_inventory.{type InventoryStats}
 
 /// CSS класс для цвета

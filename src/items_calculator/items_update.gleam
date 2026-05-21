@@ -1,8 +1,11 @@
 import gleam/int
 import gleam/option.{None, Some}
-import items_calculator/items_model.{type Model, type Msg, Model, UserSelectedFaction, UserSelectedUnit, UserSelectedColor, UserChangedCurrentLevel, UserChangedTargetLevel}
-import items_calculator/game_data
 import items_calculator/calculator_logic
+import items_calculator/game_data
+import items_calculator/items_model.{
+  type Model, type Msg, Model, UserChangedCurrentLevel, UserChangedTargetLevel,
+  UserSelectedColor, UserSelectedFaction, UserSelectedUnit,
+}
 import items_calculator/items_storage as storage
 
 pub fn update(model: Model, msg: Msg) -> Model {

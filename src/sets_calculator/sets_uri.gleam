@@ -1,14 +1,13 @@
 /// Модуль для кодирования/декодирования инвентаря в URI
 /// Формат: #inv=v2.BASE64_DATA (все 3 редкости)
-
 import gleam/bit_array
 import gleam/int
 import gleam/list
 import gleam/string
-import plinth/browser/window
 import items_calculator/game_data.{Blue, Green, Purple}
-import sets_calculator/sets_inventory.{type Inventory}
+import plinth/browser/window
 import sets_calculator/sets_game_data.{SetId}
+import sets_calculator/sets_inventory.{type Inventory}
 
 /// Версия формата URI
 const uri_version = "v2"
@@ -29,19 +28,24 @@ pub fn encode_inventory(inventory: Inventory) -> String {
 
   // Объединяем все counts с offset для каждого цвета
   // Blue: 0-287, Green: 288-575, Purple: 576-863
-  let all_entries = list.flatten([
-    counts_to_sparse(blue_counts, 0),
-    counts_to_sparse(green_counts, 288),
-    counts_to_sparse(purple_counts, 576),
-  ])
+  let all_entries =
+    list.flatten([
+      counts_to_sparse(blue_counts, 0),
+      counts_to_sparse(green_counts, 288),
+      counts_to_sparse(purple_counts, 576),
+    ])
 
   // Формируем строку "idx:cnt,idx:cnt,..."
-  let data_str = all_entries
-    |> list.map(fn(e: #(Int, Int)) { int.to_string(e.0) <> ":" <> int.to_string(e.1) })
+  let data_str =
+    all_entries
+    |> list.map(fn(e: #(Int, Int)) {
+      int.to_string(e.0) <> ":" <> int.to_string(e.1)
+    })
     |> string.join(",")
 
   // Base64 URL-safe encode
-  let encoded = bit_array.base64_url_encode(bit_array.from_string(data_str), False)
+  let encoded =
+    bit_array.base64_url_encode(bit_array.from_string(data_str), False)
 
   // Формат: v2.DATA
   uri_version <> "." <> encoded
@@ -113,7 +117,8 @@ pub fn parse_url_hash() -> Result(Inventory, Nil) {
 
       case string.starts_with(hash_clean, hash_prefix) {
         True -> {
-          let encoded = string.drop_start(hash_clean, string.length(hash_prefix))
+          let encoded =
+            string.drop_start(hash_clean, string.length(hash_prefix))
           case decode_inventory(encoded) {
             Ok(inventory) -> Ok(inventory)
             Error(_) -> Error(Nil)
@@ -174,7 +179,8 @@ fn restore_inventory_all(entries: List(#(Int, Int))) -> Inventory {
     let entity_idx = local_idx / 8
     let remainder = local_idx % 8
     let set_num = remainder / 4 + 1
-    let slot_idx = remainder % 4 + 1  // slots 1-4
+    let slot_idx = remainder % 4 + 1
+    // slots 1-4
 
     // Получаем имя по индексу через drop + first
     case list.drop(all_names, entity_idx) |> list.first {
