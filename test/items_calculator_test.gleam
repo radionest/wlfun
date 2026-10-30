@@ -71,6 +71,16 @@ pub fn level_multipliers_level_5_test() {
   |> should.equal(LevelMultipliers(6.0, 9.6))
 }
 
+pub fn level_multipliers_level_6_test() {
+  level_multipliers(6)
+  |> should.equal(LevelMultipliers(10.0, 18.0))
+}
+
+pub fn level_multipliers_level_7_test() {
+  level_multipliers(7)
+  |> should.equal(LevelMultipliers(20.0, 40.0))
+}
+
 pub fn level_multipliers_level_9_test() {
   level_multipliers(9)
   |> should.equal(LevelMultipliers(140.0, 280.0))
@@ -177,7 +187,7 @@ pub fn find_unit_correct_data_test() {
 pub fn calculate_level_cost_tier1_blue_level2_test() {
   // base = 600, color = 0.5, gold_mult = 1.0, dust_mult = 1.0
   // gold = round(600 * 0.5 * 1.0) = 300
-  // dust = round(600 / 19.6 * 0.5 * 1.0) = round(15.306) = 15
+  // dust = round(600 / 20 * 0.5 * 1.0) = 15
   let unit = Unit("Test", Tier1, Light)
   let result = calculate_level_cost(unit, Blue, 2)
   result.level |> should.equal(2)
@@ -188,36 +198,77 @@ pub fn calculate_level_cost_tier1_blue_level2_test() {
 pub fn calculate_level_cost_tier3_green_level5_test() {
   // base = 1500, color = 1.0, gold_mult = 6.0, dust_mult = 9.6
   // gold = round(1500 * 1.0 * 6.0) = 9000
-  // dust = round(1500 / 19.6 * 1.0 * 9.6) = round(734.69) = 735
+  // dust = round(1500 / 20 * 1.0 * 9.6) = 720
   let unit = Unit("Test", Tier3, Light)
   let result = calculate_level_cost(unit, Green, 5)
   result.level |> should.equal(5)
   result.gold |> should.equal(9000)
-  result.dust |> should.equal(735)
+  result.dust |> should.equal(720)
 }
 
 pub fn calculate_level_cost_tier2_purple_level9_test() {
-  // Measured in game: 154350 gold / 15750 dust for a T2 epic item
-  // with a 2% talent discount, i.e. formula output * 0.98
+  // Measured in game: 154350 gold / 15750 dust for a T2 epic item.
+  // The player talent discounts gold only: 157500 * 0.98 = 154350.
+  // Dust is undiscounted: base / 20 * color * dust_mult.
   // base = 750, color = 1.5, gold_mult = 140.0, dust_mult = 280.0
   // gold = round(750 * 1.5 * 140.0) = 157500
-  // dust = round(750 / 19.6 * 1.5 * 280.0) = round(16071.43) = 16071
+  // dust = round(750 / 20 * 1.5 * 280.0) = 15750
   let unit = Unit("Test", Tier2, Light)
   let result = calculate_level_cost(unit, Purple, 9)
   result.level |> should.equal(9)
   result.gold |> should.equal(157_500)
-  result.dust |> should.equal(16_071)
+  result.dust |> should.equal(15_750)
 }
 
 pub fn calculate_level_cost_tier5_purple_level10_test() {
   // base = 6000, color = 1.5, gold_mult = 375.0, dust_mult = 750.0
   // gold = round(6000 * 1.5 * 375.0) = 3375000
-  // dust = round(6000 / 19.6 * 1.5 * 750.0) = round(344387.76) = 344388
+  // dust = round(6000 / 20 * 1.5 * 750.0) = 337500
   let unit = Unit("Test", Tier5, Light)
   let result = calculate_level_cost(unit, Purple, 10)
   result.level |> should.equal(10)
   result.gold |> should.equal(3_375_000)
-  result.dust |> should.equal(344_388)
+  result.dust |> should.equal(337_500)
+}
+
+pub fn calculate_level_cost_tier1_green_level7_test() {
+  // Measured in game: 11520 gold / 1200 dust for a T1 rare item
+  // (Рабочий/Громила screenshots). Player talent is 4%: gold shows
+  // 12000 * 0.96 = 11520; dust has no talent discount.
+  // base = 600, color = 1.0, gold_mult = 20.0, dust_mult = 40.0
+  // gold = 600 * 1.0 * 20.0 = 12000
+  // dust = round(600 / 20 * 1.0 * 40.0) = 1200
+  let unit = Unit("Test", Tier1, Light)
+  let result = calculate_level_cost(unit, Green, 7)
+  result.level |> should.equal(7)
+  result.gold |> should.equal(12_000)
+  result.dust |> should.equal(1200)
+}
+
+pub fn calculate_level_cost_tier4_purple_level6_test() {
+  // Measured in game: 43200 gold / 4050 dust for a T4 epic item
+  // (Каравелла hull screenshot). 4% talent on gold only.
+  // base = 3000, color = 1.5, gold_mult = 10.0, dust_mult = 18.0
+  // gold = 3000 * 1.5 * 10.0 = 45000
+  // dust = round(3000 / 20 * 1.5 * 18.0) = 4050
+  let unit = Unit("Test", Tier4, Light)
+  let result = calculate_level_cost(unit, Purple, 6)
+  result.level |> should.equal(6)
+  result.gold |> should.equal(45_000)
+  result.dust |> should.equal(4050)
+}
+
+pub fn calculate_level_cost_fractional_dust_rounds_test() {
+  // Делитель 20 всё же даёт дробную пыль: результат проходит через
+  // float.round (половины — от нуля).
+  // base = 750, color = 0.5, gold_mult = 10.0, dust_mult = 18.0
+  // gold = round(750 * 0.5 * 10.0) = 3750
+  // dust = round(750 / 20 * 0.5 * 18.0) = round(337.5) = 338
+  let unit = Unit("Test", Tier2, Light)
+  let result = calculate_level_cost(unit, Blue, 6)
+  result.level |> should.equal(6)
+  result.gold |> should.equal(3750)
+  result.dust |> should.equal(338)
 }
 
 // ============================================================================
@@ -254,10 +305,10 @@ pub fn calculate_range_totals_sum_test() {
 
 pub fn calculate_range_specific_values_test() {
   // Tier1 Green от 1 до 3 (уровни 2 и 3)
-  // Уровень 2: gold = 600*1.0*1.0 = 600, dust = round(600/19.6*1.0*1.0) = 31
-  // Уровень 3: gold = 600*1.0*2.0 = 1200, dust = round(600/19.6*1.0*2.4) = 73
+  // Уровень 2: gold = 600*1.0*1.0 = 600, dust = round(600/20*1.0*1.0) = 30
+  // Уровень 3: gold = 600*1.0*2.0 = 1200, dust = round(600/20*1.0*2.4) = 72
   let unit = Unit("Test", Tier1, Light)
   let result = calculate_range(unit, Green, 1, 3)
   result.total_gold |> should.equal(600 + 1200)
-  result.total_dust |> should.equal(31 + 73)
+  result.total_dust |> should.equal(30 + 72)
 }
