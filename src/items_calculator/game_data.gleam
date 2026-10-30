@@ -167,8 +167,8 @@ pub fn level_multipliers(level: Int) -> LevelMultipliers {
     6 -> LevelMultipliers(10.0, 18.0)
     7 -> LevelMultipliers(20.0, 40.0)
     8 -> LevelMultipliers(50.0, 100.0)
-    9 -> LevelMultipliers(140.0, 220.0)
-    10 -> LevelMultipliers(375.0, 494.0)
+    9 -> LevelMultipliers(140.0, 280.0)
+    10 -> LevelMultipliers(375.0, 750.0)
     _ -> LevelMultipliers(0.0, 0.0)
   }
 }

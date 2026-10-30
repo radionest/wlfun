@@ -71,9 +71,14 @@ pub fn level_multipliers_level_5_test() {
   |> should.equal(LevelMultipliers(6.0, 9.6))
 }
 
+pub fn level_multipliers_level_9_test() {
+  level_multipliers(9)
+  |> should.equal(LevelMultipliers(140.0, 280.0))
+}
+
 pub fn level_multipliers_level_10_test() {
   level_multipliers(10)
-  |> should.equal(LevelMultipliers(375.0, 494.0))
+  |> should.equal(LevelMultipliers(375.0, 750.0))
 }
 
 pub fn level_multipliers_invalid_level_test() {
@@ -191,15 +196,28 @@ pub fn calculate_level_cost_tier3_green_level5_test() {
   result.dust |> should.equal(735)
 }
 
+pub fn calculate_level_cost_tier2_purple_level9_test() {
+  // Measured in game: 154350 gold / 15750 dust for a T2 epic item
+  // with a 2% talent discount, i.e. formula output * 0.98
+  // base = 750, color = 1.5, gold_mult = 140.0, dust_mult = 280.0
+  // gold = round(750 * 1.5 * 140.0) = 157500
+  // dust = round(750 / 19.6 * 1.5 * 280.0) = round(16071.43) = 16071
+  let unit = Unit("Test", Tier2, Light)
+  let result = calculate_level_cost(unit, Purple, 9)
+  result.level |> should.equal(9)
+  result.gold |> should.equal(157_500)
+  result.dust |> should.equal(16_071)
+}
+
 pub fn calculate_level_cost_tier5_purple_level10_test() {
-  // base = 6000, color = 1.5, gold_mult = 375.0, dust_mult = 494.0
+  // base = 6000, color = 1.5, gold_mult = 375.0, dust_mult = 750.0
   // gold = round(6000 * 1.5 * 375.0) = 3375000
-  // dust = round(6000 / 19.6 * 1.5 * 494.0) = round(226836.73) = 226837
+  // dust = round(6000 / 19.6 * 1.5 * 750.0) = round(344387.76) = 344388
   let unit = Unit("Test", Tier5, Light)
   let result = calculate_level_cost(unit, Purple, 10)
   result.level |> should.equal(10)
   result.gold |> should.equal(3_375_000)
-  result.dust |> should.equal(226_837)
+  result.dust |> should.equal(344_388)
 }
 
 // ============================================================================
