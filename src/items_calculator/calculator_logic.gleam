@@ -13,7 +13,8 @@ pub type CalculationResult {
   CalculationResult(levels: List(LevelCost), total_gold: Int, total_dust: Int)
 }
 
-/// Расчёт стоимости для одного уровня
+/// Базовая стоимость шага апгрейда без учёта таланта на скидку:
+/// в игре талант уменьшает только золото, на пыль скидка не действует.
 pub fn calculate_level_cost(
   unit: Unit,
   color: ItemColor,
@@ -25,7 +26,10 @@ pub fn calculate_level_cost(
     game_data.level_multipliers(target_level)
 
   let gold = float.round(int.to_float(base) *. color_mult *. gold_mult)
-  let dust = float.round(int.to_float(base) /. 19.6 *. color_mult *. dust_mult)
+  let dust =
+    float.round(
+      int.to_float(base) /. game_data.dust_divisor *. color_mult *. dust_mult,
+    )
 
   LevelCost(level: target_level, gold: gold, dust: dust)
 }

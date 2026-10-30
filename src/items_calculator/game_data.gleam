@@ -158,6 +158,10 @@ pub type LevelMultipliers {
   LevelMultipliers(gold: Float, dust: Float)
 }
 
+/// Делитель стоимости пыли: dust = base * color * dust_mult / dust_divisor.
+/// Талант на скидку в игре пыль не уменьшает, поэтому константа — чистая 20.
+pub const dust_divisor = 20.0
+
 pub fn level_multipliers(level: Int) -> LevelMultipliers {
   case level {
     2 -> LevelMultipliers(1.0, 1.0)
