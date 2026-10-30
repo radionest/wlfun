@@ -7,16 +7,17 @@ import items_calculator/game_data.{
   type ItemColor, type Unit, Blue, Dark, Green, Light, Purple,
 }
 import items_calculator/items_model.{
-  type Model, type Msg, UserChangedCurrentLevel, UserChangedTargetLevel,
-  UserSelectedColor, UserSelectedFaction, UserSelectedUnit,
+  type Model, type Msg, UserChangedCurrentLevel, UserChangedTalentLevel,
+  UserChangedTargetLevel, UserSelectedColor, UserSelectedFaction,
+  UserSelectedUnit,
 }
-import lustre/attribute.{class, selected, value}
+import lustre/attribute.{class, max, min, selected, step, type_, value}
 import lustre/element.{type Element, text}
 import lustre/element/html.{
-  button, div, h1, h2, label, option, select, span, table, tbody, td, th, thead,
-  tr,
+  button, div, h1, h2, input, label, option, select, span, table, tbody, td, th,
+  thead, tr,
 }
-import lustre/event.{on_change, on_click}
+import lustre/event.{on_change, on_click, on_input}
 
 pub fn view(model: Model) -> Element(Msg) {
   div([class("items-calculator")], [
@@ -26,6 +27,7 @@ pub fn view(model: Model) -> Element(Msg) {
       view_unit_select(model),
       view_color_select(model),
       view_level_selects(model),
+      view_talent_select(model),
     ]),
     view_results(model),
   ])
@@ -147,6 +149,28 @@ fn view_level_selects(model: Model) -> Element(Msg) {
             int.to_string(lvl),
           )
         }),
+      ),
+    ]),
+  ])
+}
+
+/// Ползунок уровня таланта на скидку золота (0-3 = 0/2/4/6%)
+fn view_talent_select(model: Model) -> Element(Msg) {
+  div([class("form-group talent-select")], [
+    label([], [text("Талант скидки:")]),
+    input([
+      type_("range"),
+      min("0"),
+      max("3"),
+      step("1"),
+      value(int.to_string(model.talent_level)),
+      class("talent-slider"),
+      on_input(UserChangedTalentLevel),
+    ]),
+    span([class("talent-percent")], [
+      text(
+        int.to_string(game_data.talent_discount_percent(model.talent_level))
+        <> "%",
       ),
     ]),
   ])

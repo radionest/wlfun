@@ -17,6 +17,7 @@ pub type SavedSettings {
     color: String,
     current_level: Int,
     target_level: Int,
+    talent_level: Int,
   )
 }
 
@@ -27,12 +28,15 @@ fn settings_decoder() -> decode.Decoder(SavedSettings) {
   use color <- decode.field("color", decode.string)
   use current_level <- decode.field("current_level", decode.int)
   use target_level <- decode.field("target_level", decode.int)
+  // Field added after the first release: absent in older saves
+  use talent_level <- decode.optional_field("talent_level", 0, decode.int)
   decode.success(SavedSettings(
     faction,
     unit_name,
     color,
     current_level,
     target_level,
+    talent_level,
   ))
 }
 
@@ -49,6 +53,7 @@ fn settings_encoder(settings: SavedSettings) -> json.Json {
     #("color", json.string(settings.color)),
     #("current_level", json.int(settings.current_level)),
     #("target_level", json.int(settings.target_level)),
+    #("talent_level", json.int(settings.talent_level)),
   ])
 }
 
@@ -74,6 +79,7 @@ pub fn save(
   color: ItemColor,
   current_level: Int,
   target_level: Int,
+  talent_level: Int,
 ) -> Nil {
   case plinth_storage.local() {
     Error(_) -> Nil
@@ -87,6 +93,7 @@ pub fn save(
           color: color_to_string(color),
           current_level: current_level,
           target_level: target_level,
+          talent_level: talent_level,
         )
       let _ = varasto.set(storage, storage_key, settings)
       Nil

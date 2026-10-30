@@ -372,6 +372,24 @@ input:focus {
   color: var(--accent);
 }
 
+/* ===== Талант скидки ===== */
+.talent-select {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.talent-slider {
+  width: 140px;
+  accent-color: var(--accent);
+}
+
+.talent-percent {
+  min-width: 36px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
 /* ===== Результаты (Items калькулятор) ===== */
 .results-placeholder {
   margin-top: 30px;

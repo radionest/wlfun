@@ -55,3 +55,24 @@ pub fn calculate_range(
     total_dust: total_dust,
   )
 }
+
+/// Применяет скидку таланта к золоту каждого шага и пересчитывает итог;
+/// пыль не меняется — в игре талант пыль не уменьшает.
+pub fn apply_talent_discount(
+  result: CalculationResult,
+  talent_level: Int,
+) -> CalculationResult {
+  let factor = 1.0 -. game_data.talent_discount(talent_level)
+  case factor {
+    1.0 -> result
+    _ -> {
+      let levels =
+        list.map(result.levels, fn(lc: LevelCost) {
+          LevelCost(..lc, gold: float.round(int.to_float(lc.gold) *. factor))
+        })
+      let total_gold = list.fold(levels, 0, fn(acc, lc) { acc + lc.gold })
+
+      CalculationResult(..result, levels: levels, total_gold: total_gold)
+    }
+  }
+}

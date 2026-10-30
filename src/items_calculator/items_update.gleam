@@ -3,8 +3,9 @@ import gleam/option.{None, Some}
 import items_calculator/calculator_logic
 import items_calculator/game_data
 import items_calculator/items_model.{
-  type Model, type Msg, Model, UserChangedCurrentLevel, UserChangedTargetLevel,
-  UserSelectedColor, UserSelectedFaction, UserSelectedUnit,
+  type Model, type Msg, Model, UserChangedCurrentLevel, UserChangedTalentLevel,
+  UserChangedTargetLevel, UserSelectedColor, UserSelectedFaction,
+  UserSelectedUnit,
 }
 import items_calculator/items_storage as storage
 
@@ -45,6 +46,14 @@ pub fn update(model: Model, msg: Msg) -> Model {
         _ -> model
       }
     }
+
+    UserChangedTalentLevel(level_str) -> {
+      case int.parse(level_str) {
+        Ok(level) if level >= 0 && level <= 3 ->
+          Model(..model, talent_level: level)
+        _ -> model
+      }
+    }
   }
 
   // Автоматический пересчёт при валидных данных
@@ -61,6 +70,7 @@ pub fn update(model: Model, msg: Msg) -> Model {
     final_model.selected_color,
     final_model.current_level,
     final_model.target_level,
+    final_model.talent_level,
   )
 
   final_model
@@ -76,6 +86,7 @@ fn recalculate(model: Model) -> Model {
           model.current_level,
           model.target_level,
         )
+        |> calculator_logic.apply_talent_discount(model.talent_level)
       Model(..model, result: Some(result))
     }
     _ -> Model(..model, result: None)

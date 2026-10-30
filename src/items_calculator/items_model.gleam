@@ -14,6 +14,7 @@ pub type Model {
     selected_color: ItemColor,
     current_level: Int,
     target_level: Int,
+    talent_level: Int,
     result: Option(CalculationResult),
   )
 }
@@ -34,15 +35,19 @@ pub fn init() -> Model {
       }
       // Target must stay above current; older saves may violate this
       let target_level = int.max(saved.target_level, saved.current_level + 1)
+      let talent_level = int.clamp(saved.talent_level, 0, 3)
       // Вычисляем результат если есть юнит
       let result = case unit {
         Some(u) ->
-          Some(calculator_logic.calculate_range(
-            u,
-            color,
-            saved.current_level,
-            target_level,
-          ))
+          Some(
+            calculator_logic.calculate_range(
+              u,
+              color,
+              saved.current_level,
+              target_level,
+            )
+            |> calculator_logic.apply_talent_discount(talent_level),
+          )
         _ -> None
       }
       Model(
@@ -51,6 +56,7 @@ pub fn init() -> Model {
         selected_color: color,
         current_level: saved.current_level,
         target_level: target_level,
+        talent_level: talent_level,
         result: result,
       )
     }
@@ -61,6 +67,7 @@ pub fn init() -> Model {
         selected_color: Green,
         current_level: 1,
         target_level: 2,
+        talent_level: 0,
         result: None,
       )
   }
@@ -73,4 +80,5 @@ pub type Msg {
   UserSelectedColor(String)
   UserChangedCurrentLevel(String)
   UserChangedTargetLevel(String)
+  UserChangedTalentLevel(String)
 }
