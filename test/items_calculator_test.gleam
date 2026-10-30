@@ -1,12 +1,13 @@
 import gleam/list
 import gleeunit/should
 import items_calculator/calculator_logic.{
-  type LevelCost, calculate_level_cost, calculate_range,
+  type LevelCost, apply_talent_discount, calculate_level_cost, calculate_range,
 }
 import items_calculator/game_data.{
   Blue, Dark, Green, LevelMultipliers, Light, Purple, Tier1, Tier2, Tier3, Tier4,
   Tier5, Unit, all_units, color_multiplier, find_unit, level_multipliers,
-  string_to_color, string_to_faction, tier_base, units_by_faction,
+  string_to_color, string_to_faction, talent_discount, talent_discount_percent,
+  tier_base, units_by_faction,
 }
 
 // ============================================================================
@@ -99,6 +100,50 @@ pub fn level_multipliers_invalid_level_test() {
 pub fn level_multipliers_level_11_invalid_test() {
   level_multipliers(11)
   |> should.equal(LevelMultipliers(0.0, 0.0))
+}
+
+// ============================================================================
+// Тесты talent_discount
+// ============================================================================
+
+pub fn talent_discount_level_0_test() {
+  talent_discount(0)
+  |> should.equal(0.0)
+}
+
+pub fn talent_discount_level_1_test() {
+  talent_discount(1)
+  |> should.equal(0.02)
+}
+
+pub fn talent_discount_level_2_test() {
+  talent_discount(2)
+  |> should.equal(0.04)
+}
+
+pub fn talent_discount_level_3_test() {
+  talent_discount(3)
+  |> should.equal(0.06)
+}
+
+pub fn talent_discount_out_of_range_test() {
+  talent_discount(4)
+  |> should.equal(0.0)
+  talent_discount(-1)
+  |> should.equal(0.0)
+}
+
+pub fn talent_discount_percent_levels_test() {
+  talent_discount_percent(0)
+  |> should.equal(0)
+  talent_discount_percent(1)
+  |> should.equal(2)
+  talent_discount_percent(2)
+  |> should.equal(4)
+  talent_discount_percent(3)
+  |> should.equal(6)
+  talent_discount_percent(4)
+  |> should.equal(0)
 }
 
 // ============================================================================
@@ -311,4 +356,32 @@ pub fn calculate_range_specific_values_test() {
   let result = calculate_range(unit, Green, 1, 3)
   result.total_gold |> should.equal(600 + 1200)
   result.total_dust |> should.equal(30 + 72)
+}
+
+// ============================================================================
+// Тесты apply_talent_discount
+// ============================================================================
+
+pub fn apply_talent_discount_gold_only_test() {
+  // T1 green 1->3: базовые шаги к2 = 600g/30d, к3 = 1200g/72d.
+  // Уровень таланта 2 (4%): золото ×0.96 -> 576/1152, пыль без изменений.
+  let unit = Unit("Test", Tier1, Light)
+  let base = calculate_range(unit, Green, 1, 3)
+  let result = apply_talent_discount(base, 2)
+
+  result.levels
+  |> list.map(fn(lc: LevelCost) { lc.gold })
+  |> should.equal([576, 1152])
+  result.levels
+  |> list.map(fn(lc: LevelCost) { lc.dust })
+  |> should.equal([30, 72])
+  result.total_gold |> should.equal(576 + 1152)
+  result.total_dust |> should.equal(30 + 72)
+}
+
+pub fn apply_talent_discount_level_0_identity_test() {
+  let unit = Unit("Test", Tier1, Light)
+  let base = calculate_range(unit, Green, 1, 3)
+  apply_talent_discount(base, 0)
+  |> should.equal(base)
 }

@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/list
 
 /// Цвета/редкости предметов
@@ -175,4 +176,20 @@ pub fn level_multipliers(level: Int) -> LevelMultipliers {
     10 -> LevelMultipliers(375.0, 750.0)
     _ -> LevelMultipliers(0.0, 0.0)
   }
+}
+
+/// Уровни таланта скидки золота (0-3) в процентах: 0%, 2%, 4%, 6%.
+/// На пыль не влияет (см. dust_divisor).
+pub fn talent_discount_percent(level: Int) -> Int {
+  case level {
+    1 -> 2
+    2 -> 4
+    3 -> 6
+    _ -> 0
+  }
+}
+
+/// Скидка таланта на золото долей (0.02/0.04/0.06).
+pub fn talent_discount(level: Int) -> Float {
+  int.to_float(talent_discount_percent(level)) /. 100.0
 }
