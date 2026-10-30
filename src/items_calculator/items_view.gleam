@@ -21,11 +21,6 @@ import lustre/event.{on_change, on_click}
 pub fn view(model: Model) -> Element(Msg) {
   div([class("items-calculator")], [
     h1([], [text("Калькулятор улучшения предметов")]),
-    div([class("disclaimer")], [
-      text(
-        "Это неофициальный калькулятор. Он может содержать ошибки и неточности, особенно на 9 и 10 уровнях, так как пока что нет точных данных об их стоимости. Реальная стоимость апгрейда для этих уровней может отличаться в несколько раз как в большую так и в меньшую стороны. Если вы прокачали вещь до 8 или 9 уровней, поспамьте скринами в группу ВЛ в телеге.",
-      ),
-    ]),
     div([class("form-section")], [
       view_faction_select(model),
       view_unit_select(model),
@@ -146,7 +141,7 @@ fn view_level_selects(model: Model) -> Element(Msg) {
       label([], [text("Целевой уровень:")]),
       select(
         [on_change(UserChangedTargetLevel)],
-        list.map(list.range(2, 10), fn(lvl) {
+        list.map(list.range(model.current_level + 1, 10), fn(lvl) {
           option(
             [value(int.to_string(lvl)), selected(model.target_level == lvl)],
             int.to_string(lvl),
@@ -169,7 +164,6 @@ fn view_results(model: Model) -> Element(Msg) {
         h2([], [text("Стоимость улучшения")]),
         view_results_table(result),
         view_totals(result, model.selected_color),
-        view_high_level_disclaimer(model),
       ])
     }
   }
@@ -208,18 +202,6 @@ fn view_totals(result: CalculationResult, _color: ItemColor) -> Element(Msg) {
       span([class("total-value dust")], [text(format_number(result.total_dust))]),
     ]),
   ])
-}
-
-fn view_high_level_disclaimer(model: Model) -> Element(Msg) {
-  case model.target_level >= 9 {
-    True ->
-      div([class("disclaimer high-level-warning")], [
-        text(
-          "⚠️ Внимание: расчёт для 9 и 10 уровней может содержать значительную погрешность (в несколько раз в любую сторону), так как точные значения стоимости апгрейда на эти уровни пока не известны.",
-        ),
-      ])
-    False -> text("")
-  }
 }
 
 /// Форматирование числа с разделителями тысяч

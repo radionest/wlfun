@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/option.{type Option, None, Some}
 import items_calculator/calculator_logic.{type CalculationResult}
 import items_calculator/game_data.{
@@ -31,14 +32,16 @@ pub fn init() -> Model {
           }
         None -> None
       }
+      // Target must stay above current; older saves may violate this
+      let target_level = int.max(saved.target_level, saved.current_level + 1)
       // Вычисляем результат если есть юнит
       let result = case unit {
-        Some(u) if saved.target_level > saved.current_level ->
+        Some(u) ->
           Some(calculator_logic.calculate_range(
             u,
             color,
             saved.current_level,
-            saved.target_level,
+            target_level,
           ))
         _ -> None
       }
@@ -47,7 +50,7 @@ pub fn init() -> Model {
         selected_unit: unit,
         selected_color: color,
         current_level: saved.current_level,
-        target_level: saved.target_level,
+        target_level: target_level,
         result: result,
       )
     }

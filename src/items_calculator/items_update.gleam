@@ -30,15 +30,17 @@ pub fn update(model: Model, msg: Msg) -> Model {
 
     UserChangedCurrentLevel(level_str) -> {
       case int.parse(level_str) {
-        Ok(level) if level >= 1 && level <= 9 ->
-          Model(..model, current_level: level)
+        Ok(level) if level >= 1 && level <= 9 -> {
+          let target_level = int.max(model.target_level, level + 1)
+          Model(..model, current_level: level, target_level: target_level)
+        }
         _ -> model
       }
     }
 
     UserChangedTargetLevel(level_str) -> {
       case int.parse(level_str) {
-        Ok(level) if level >= 2 && level <= 10 ->
+        Ok(level) if level > model.current_level && level <= 10 ->
           Model(..model, target_level: level)
         _ -> model
       }
